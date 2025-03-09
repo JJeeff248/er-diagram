@@ -18,6 +18,10 @@ function App() {
     const [copySuccess, setCopySuccess] = useState(false);
     const [importCode, setImportCode] = useState("");
     const [importError, setImportError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingSource, setLoadingSource] = useState<
+        "hash" | "file" | "code" | null
+    >(null);
     const shareUrlInputRef = useRef<HTMLInputElement>(null);
     const diagramCanvasRef = useRef<any>(null);
     const appMainRef = useRef<HTMLDivElement>(null);
@@ -33,6 +37,10 @@ function App() {
                 const hashData = window.location.hash.substring(1);
                 const jsonData = decompressData(hashData);
 
+                // Set loading state
+                setIsLoading(true);
+                setLoadingSource("hash");
+
                 // Once DOM is ready, import the data
                 setTimeout(() => {
                     if (
@@ -46,6 +54,9 @@ function App() {
                         if (success && jsonData.sqlInput) {
                             setSqlInput(jsonData.sqlInput);
                         }
+                        // Clear loading state
+                        setIsLoading(false);
+                        setLoadingSource(null);
                     }
                 }, 100);
             } catch (error) {
@@ -56,6 +67,9 @@ function App() {
                         ? error.message
                         : "The shared diagram data is invalid or corrupted.";
                 alert(`Error loading diagram: ${errorMessage}`);
+                // Clear loading state
+                setIsLoading(false);
+                setLoadingSource(null);
             }
         }
     }, []);
@@ -332,6 +346,10 @@ function App() {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
             if (file.type === "application/json") {
+                // Set loading state
+                setIsLoading(true);
+                setLoadingSource("file");
+
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     if (event.target && event.target.result) {
@@ -368,6 +386,10 @@ function App() {
                                         : "Invalid JSON format"
                                 }`
                             );
+                        } finally {
+                            // Clear loading state
+                            setIsLoading(false);
+                            setLoadingSource(null);
                         }
                     }
                 };
@@ -398,6 +420,10 @@ function App() {
         }
 
         try {
+            // Set loading state
+            setIsLoading(true);
+            setLoadingSource("code");
+
             const importedData = shareCodeToDiagram(importCode);
 
             if (
@@ -417,6 +443,10 @@ function App() {
         } catch (error) {
             console.error("Error importing from code:", error);
             setImportError("Invalid share code format");
+        } finally {
+            // Clear loading state
+            setIsLoading(false);
+            setLoadingSource(null);
         }
     };
 
@@ -488,7 +518,11 @@ function App() {
                     title="Drag to resize panel"
                 ></div>
 
-                <DiagramCanvas ref={diagramCanvasRef} />
+                <DiagramCanvas
+                    ref={diagramCanvasRef}
+                    isLoading={isLoading}
+                    loadingSource={loadingSource}
+                />
             </main>
 
             {/* Combined Share Modal with Tabs */}
