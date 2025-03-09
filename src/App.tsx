@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { DiagramCanvas } from "./components/DiagramCanvas";
 import { SqlInputPanel } from "./components/SqlInputPanel";
 import "./App.css";
-// Import type for html2canvas
-import type html2canvas from "html2canvas";
 
 function App() {
     const [sqlInput, setSqlInput] = useState("");

@@ -37,7 +37,7 @@ interface ForeignKeyDefinition {
     referenceColumn: string;
 }
 
-export const DiagramCanvas = forwardRef((props, ref) => {
+export const DiagramCanvas = forwardRef((_, ref) => {
     const [entities, setEntities] = useState<EntityData[]>([]);
     const [relationships, setRelationships] = useState<RelationshipData[]>([]);
     const [selectedEntityId, setSelectedEntityId] = useState<string | null>(
