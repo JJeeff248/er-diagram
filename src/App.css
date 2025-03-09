@@ -213,9 +213,10 @@ body {
     border-radius: 6px;
     padding: 0.75rem 1.5rem;
     cursor: pointer;
-    align-self: flex-start;
+    width: 100%;
     font-weight: 500;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .sql-input-panel button:hover {
