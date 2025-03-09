@@ -57,7 +57,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
         const [enumData, setEnumData] = useState<Record<string, string[]>>({});
         const [animationFrame, setAnimationFrame] = useState(0);
 
-        // Animation effect for loading
+        
         useEffect(() => {
             let animationFrameId: number;
 
@@ -77,7 +77,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
             };
         }, [isLoading]);
 
-        // Expose methods through ref
+        
         useImperativeHandle(ref, () => ({
             handleGenerateFromSql,
             getExportData: () => ({
@@ -89,7 +89,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                 entities: EntityData[];
                 relationships: RelationshipData[];
                 enumData: Record<string, string[]>;
-                sqlInput?: string; // Optional SQL input field
+                sqlInput?: string; 
             }) => {
                 try {
                     // Validate imported data
@@ -138,12 +138,12 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                         importedEnumData = data.enumData;
                     }
 
-                    // Set the data to state
+                    
                     setEntities(data.entities);
                     setRelationships(data.relationships);
                     setEnumData(importedEnumData);
 
-                    // Reset selection
+                    
                     setSelectedEntityId(null);
                     setSelectedRelationshipId(null);
 
@@ -202,7 +202,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
             const newEntities: EntityData[] = [];
             const newRelationships: RelationshipData[] = [];
 
-            // Position calculation for layout
+            
             const margin = 50;
             const xSpacing = 300;
             const ySpacing = 250;
@@ -252,7 +252,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                 table.foreignKeys.forEach((fk, index) => {
                     const targetEntityId = `entity-${fk.referenceTable}`;
 
-                    // Find column indices
+                    
                     const sourceColumnIndex = table.columns.findIndex(
                         (col) => col.name === fk.column
                     );
@@ -270,7 +270,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                             sourceColumnIndex !== -1 &&
                             targetColumnIndex !== -1
                         ) {
-                            // Update the attribute description to include foreign key reference
+                            
                             const sourceEntity = newEntities.find(
                                 (e) => e.id === sourceEntityId
                             );
@@ -296,7 +296,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                                     entityId: targetEntityId,
                                     attributeIndex: targetColumnIndex,
                                 },
-                                type: "one-to-many", // Default relationship type
+                                type: "one-to-many", 
                             });
                         }
                     }
@@ -318,9 +318,7 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
             >
                 {isLoading ? (
                     <div className="loading-animation">
-                        {/* Fun database/entity loading animation */}
                         <div className="loading-animation-container">
-                            {/* Main circle that rotates */}
                             <div
                                 className="loading-circle"
                                 style={{
@@ -330,7 +328,6 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                                 }}
                             ></div>
 
-                            {/* Entity boxes that move around the circle */}
                             {[0, 1, 2, 3].map((i) => {
                                 const angle =
                                     (animationFrame * 3 + i * 90) *
@@ -358,7 +355,6 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                                 );
                             })}
 
-                            {/* Relationship lines that pulse */}
                             {[0, 1].map((i) => {
                                 const startAngle =
                                     (animationFrame * 3 + i * 180) *
@@ -434,7 +430,6 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                     </div>
                 ) : (
                     <>
-                        {/* Render relationships */}
                         {relationships.map((relationship) => {
                             const sourceEntity = entities.find(
                                 (e) => e.id === relationship.from.entityId
@@ -467,7 +462,6 @@ export const DiagramCanvas = forwardRef<unknown, DiagramCanvasProps>(
                             );
                         })}
 
-                        {/* Render entities */}
                         {entities.map((entity) => (
                             <Entity
                                 key={entity.id}

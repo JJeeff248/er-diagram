@@ -7,7 +7,7 @@ import "./App.css";
 
 function App() {
     const [sqlInput, setSqlInput] = useState("");
-    const [sidebarWidth, setSidebarWidth] = useState(380); // Increased initial width from 280px to 380px
+    const [sidebarWidth, setSidebarWidth] = useState(380);
     const [isResizing, setIsResizing] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
@@ -29,19 +29,19 @@ function App() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const shareCodeRef = useRef<HTMLTextAreaElement>(null);
 
-    // Check URL hash on initial load
+    
     useEffect(() => {
         if (window.location.hash && window.location.hash.length > 1) {
             try {
-                // Remove the leading # and decode the data
+                
                 const hashData = window.location.hash.substring(1);
                 const jsonData = decompressData(hashData);
 
-                // Set loading state
+                
                 setIsLoading(true);
                 setLoadingSource("hash");
 
-                // Once DOM is ready, import the data
+                
                 setTimeout(() => {
                     if (
                         diagramCanvasRef.current &&
@@ -54,20 +54,20 @@ function App() {
                         if (success && jsonData.sqlInput) {
                             setSqlInput(jsonData.sqlInput);
                         }
-                        // Clear loading state
+                        
                         setIsLoading(false);
                         setLoadingSource(null);
                     }
                 }, 100);
             } catch (error) {
                 console.error("Error loading diagram from URL:", error);
-                // Show a more helpful error message
+                
                 const errorMessage =
                     error instanceof Error
                         ? error.message
                         : "The shared diagram data is invalid or corrupted.";
                 alert(`Error loading diagram: ${errorMessage}`);
-                // Clear loading state
+                
                 setIsLoading(false);
                 setLoadingSource(null);
             }
@@ -83,18 +83,18 @@ function App() {
         }
     };
 
-    // Handle mouse down on resizer
+    
     const handleMouseDown = (e: React.MouseEvent) => {
         setIsResizing(true);
         e.preventDefault();
     };
 
-    // Handle mouse move for resizing
+    
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isResizing || !appMainRef.current) return;
 
-            // Calculate position relative to the app-main element
+            
             const appMainRect = appMainRef.current.getBoundingClientRect();
             const newWidth = Math.max(
                 280,
@@ -121,12 +121,12 @@ function App() {
         };
     }, [isResizing]);
 
-    // Store sidebar width in localStorage to persist between sessions
+    
     useEffect(() => {
         const storedWidth = localStorage.getItem("sidebarWidth");
         if (storedWidth) {
             const width = parseInt(storedWidth, 10);
-            // Make sure the stored width is within the new constraints
+            
             if (width >= 280 && width <= 800) {
                 setSidebarWidth(width);
             }
@@ -139,7 +139,7 @@ function App() {
         }
     }, [sidebarWidth]);
 
-    // Handle export menu clicks outside
+    
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (
@@ -172,7 +172,7 @@ function App() {
         setShowExportMenu((prev) => !prev);
     };
 
-    // Prepare data for sharing
+    
     const prepareExportData = () => {
         if (
             !diagramCanvasRef.current ||
@@ -182,35 +182,35 @@ function App() {
             return null;
         }
 
-        // Get diagram data and add SQL input to it
+        
         const diagramData = diagramCanvasRef.current.getExportData();
         const data = {
             ...diagramData,
-            sqlInput, // Include the SQL input in the export data
+            sqlInput, 
         };
 
         return data;
     };
 
-    // Open share modal with tabs
+    
     const openShareModal = () => {
         const data = prepareExportData();
         if (!data) return;
 
-        // Generate URL
+        
         const compressedData = compressData(data);
         const url = `${window.location.origin}${window.location.pathname}#${compressedData}`;
         setShareUrl(url);
 
-        // Generate code
+        
         const code = diagramToShareCode(data);
         setShareCode(code);
 
-        // Show modal
+        
         setShowShareModal(true);
-        setActiveShareTab("url"); // Default to URL tab
+        setActiveShareTab("url"); 
 
-        // Focus appropriate field based on active tab
+        
         setTimeout(() => {
             if (activeShareTab === "url" && shareUrlInputRef.current) {
                 shareUrlInputRef.current.select();
@@ -220,7 +220,7 @@ function App() {
         }, 100);
     };
 
-    // Copy either URL or code to clipboard
+    
     const copyToClipboard = () => {
         if (activeShareTab === "url" && shareUrlInputRef.current) {
             shareUrlInputRef.current.select();
@@ -230,7 +230,7 @@ function App() {
             document.execCommand("copy");
         }
 
-        // Show success state
+        
         setCopySuccess(true);
         setTimeout(() => {
             setCopySuccess(false);
@@ -245,12 +245,12 @@ function App() {
         ) as HTMLElement;
         if (!canvasElement) return;
 
-        // Use html2canvas to capture the diagram
+        
         import("html2canvas").then(({ default: html2canvas }) => {
-            // Using 'as any' to bypass TypeScript errors due to type definition mismatch
+            
             const options = {
                 backgroundColor: "#f5f5f5",
-                scale: 2, // Better quality
+                scale: 2, 
                 logging: false,
                 allowTaint: true,
                 useCORS: true,
@@ -258,7 +258,7 @@ function App() {
 
             html2canvas(canvasElement, options).then(
                 (canvas: HTMLCanvasElement) => {
-                    // Create download link
+                    
                     const link = document.createElement("a");
                     link.download = `er-diagram.${format}`;
                     link.href = canvas.toDataURL(`image/${format}`);
@@ -273,29 +273,29 @@ function App() {
     const exportAsSVG = () => {
         if (!diagramCanvasRef.current) return;
 
-        // Get the diagram element
+        
         const canvasElement = document.querySelector(
             ".diagram-canvas"
         ) as HTMLElement;
         if (!canvasElement) return;
 
-        // Use DOM to SVG library
+        
         import("dom-to-svg").then((domToSVG) => {
             const svg = domToSVG.elementToSVG(canvasElement);
             const serializer = new XMLSerializer();
             const svgString = serializer.serializeToString(svg);
 
-            // Create a Blob with the SVG content
+            
             const blob = new Blob([svgString], { type: "image/svg+xml" });
             const url = URL.createObjectURL(blob);
 
-            // Create download link
+            
             const link = document.createElement("a");
             link.download = "er-diagram.svg";
             link.href = url;
             link.click();
 
-            // Clean up
+            
             URL.revokeObjectURL(url);
         });
 
@@ -307,31 +307,31 @@ function App() {
             !diagramCanvasRef.current ||
             !diagramCanvasRef.current.getExportData
         ) {
-            // If getExportData doesn't exist yet, we'll create it in the DiagramCanvas component
+            
             console.error("Export data method not available");
             return;
         }
 
-        // Get diagram data and add SQL input to it
+        
         const diagramData = diagramCanvasRef.current.getExportData();
         const exportData = {
             ...diagramData,
-            sqlInput, // Include the SQL input in the export data
+            sqlInput, 
         };
 
         const jsonStr = JSON.stringify(exportData, null, 2);
 
-        // Create a Blob with the JSON content
+        
         const blob = new Blob([jsonStr], { type: "application/json" });
         const url = URL.createObjectURL(blob);
 
-        // Create download link
+        
         const link = document.createElement("a");
         link.download = "er-diagram-schema.json";
         link.href = url;
         link.click();
 
-        // Clean up
+        
         URL.revokeObjectURL(url);
         setShowExportMenu(false);
     };
@@ -346,7 +346,7 @@ function App() {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
             if (file.type === "application/json") {
-                // Set loading state
+                
                 setIsLoading(true);
                 setLoadingSource("file");
 
@@ -362,19 +362,19 @@ function App() {
                                 diagramCanvasRef.current &&
                                 diagramCanvasRef.current.handleImportFromJson
                             ) {
-                                // Import diagram data
+                                
                                 const success =
                                     diagramCanvasRef.current.handleImportFromJson(
                                         jsonData
                                     );
 
                                 if (success) {
-                                    // Set the SQL input if it exists in the imported data
+                                    
                                     if (jsonData.sqlInput) {
                                         setSqlInput(jsonData.sqlInput);
                                     }
 
-                                    // Removed success alert
+                                    
                                 }
                             }
                         } catch (error) {
@@ -387,7 +387,7 @@ function App() {
                                 }`
                             );
                         } finally {
-                            // Clear loading state
+                            
                             setIsLoading(false);
                             setLoadingSource(null);
                         }
@@ -399,20 +399,20 @@ function App() {
             }
         }
 
-        // Reset the file input so the same file can be selected again
+        
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
     };
 
-    // Show import code modal
+    
     const showImportCodeDialog = () => {
         setImportCode("");
         setImportError("");
         setShowImportCodeModal(true);
     };
 
-    // Import diagram from code
+    
     const importFromCode = () => {
         if (!importCode.trim()) {
             setImportError("Please enter a share code");
@@ -420,7 +420,7 @@ function App() {
         }
 
         try {
-            // Set loading state
+            
             setIsLoading(true);
             setLoadingSource("code");
 
@@ -444,7 +444,7 @@ function App() {
             console.error("Error importing from code:", error);
             setImportError("Invalid share code format");
         } finally {
-            // Clear loading state
+            
             setIsLoading(false);
             setLoadingSource(null);
         }
@@ -511,7 +511,6 @@ function App() {
                     />
                 </div>
 
-                {/* Resizer handle */}
                 <div
                     className="sidebar-resizer"
                     onMouseDown={handleMouseDown}
@@ -525,7 +524,6 @@ function App() {
                 />
             </main>
 
-            {/* Combined Share Modal with Tabs */}
             {showShareModal && (
                 <div className="modal-overlay">
                     <div className="share-modal-container">
@@ -634,7 +632,6 @@ function App() {
                 </div>
             )}
 
-            {/* Import Code Modal */}
             {showImportCodeModal && (
                 <div className="modal-overlay">
                     <div className="share-modal-container">

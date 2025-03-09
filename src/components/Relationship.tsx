@@ -1,4 +1,4 @@
-// Removing unused import: import React from 'react';
+
 
 interface EntityData {
     id: string;
@@ -29,9 +29,9 @@ export function Relationship({
     onSelect,
 }: RelationshipProps) {
     const ENTITY_HEADER_HEIGHT = 40;
-    const ATTRIBUTE_HEIGHT = 33; // Increased for the new design
+    const ATTRIBUTE_HEIGHT = 33; 
 
-    // Calculate connection points
+    
     const sourceY =
         source.position.y +
         ENTITY_HEADER_HEIGHT +
@@ -41,21 +41,21 @@ export function Relationship({
         ENTITY_HEADER_HEIGHT +
         (targetAttributeIndex + 0.5) * ATTRIBUTE_HEIGHT;
 
-    // Determine which sides to connect based on entity positions
-    const sourceCenterX = source.position.x + 100; // Width/2 for wider entities
+    
+    const sourceCenterX = source.position.x + 100; 
     const targetCenterX = target.position.x + 100;
 
     const isSourceToLeft = sourceCenterX < targetCenterX;
 
     const sourceX = isSourceToLeft
-        ? source.position.x + 200 // Right side of source
-        : source.position.x; // Left side of source
+        ? source.position.x + 200 
+        : source.position.x; 
 
     const targetX = isSourceToLeft
-        ? target.position.x // Left side of target
-        : target.position.x + 200; // Right side of target
+        ? target.position.x 
+        : target.position.x + 200; 
 
-    // Draw arrow markers based on relationship type
+    
     const renderMarker = () => {
         const markerId = `marker-${id}`;
 
@@ -87,8 +87,8 @@ export function Relationship({
         );
     };
 
-    // Calculate control points for the bezier curve
-    const controlPointOffset = 100; // Increased for smoother curves
+    
+    const controlPointOffset = 100; 
     const sourceControlX = isSourceToLeft
         ? sourceX + controlPointOffset
         : sourceX - controlPointOffset;
@@ -96,10 +96,10 @@ export function Relationship({
         ? targetX - controlPointOffset
         : targetX + controlPointOffset;
 
-    // Create the bezier path
+    
     const path = `M ${sourceX},${sourceY} C ${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}`;
 
-    // Get relationship label
+    
     const getRelationshipLabel = () => {
         switch (type) {
             case "one-to-one":
@@ -145,7 +145,6 @@ export function Relationship({
                 markerEnd={`url(#marker-${id})`}
             />
 
-            {/* Label background */}
             <rect
                 x={(sourceX + targetX) / 2 - 20}
                 y={(sourceY + targetY) / 2 - 15}
@@ -158,7 +157,6 @@ export function Relationship({
                 pointerEvents="none"
             />
 
-            {/* Label text */}
             <text
                 x={(sourceX + targetX) / 2}
                 y={(sourceY + targetY) / 2 + 5}

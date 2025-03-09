@@ -297,7 +297,6 @@ body {
     border-color: #333 transparent transparent;
 }
 
-/* Add styles for the resizer */
 .sidebar-resizer {
     width: 8px;
     background-color: transparent;
@@ -311,7 +310,7 @@ body {
     background-color: rgba(97, 218, 251, 0.2);
 }
 
-/* Add a visual indicator for the resizer */
+/* Vsual indicator for the resizer */
 .sidebar-resizer::after {
     content: "";
     display: block;
@@ -328,7 +327,6 @@ body {
     background-color: #61dafb;
 }
 
-/* Add a resizing cursor to the body when resizing */
 body.resizing {
     cursor: col-resize;
     user-select: none;
@@ -373,12 +371,10 @@ body.resizing {
     background-color: #3a3a3a;
 }
 
-/* Ensure the body remains non-scrollable when export menu is active */
 body.export-menu-open {
     overflow: hidden;
 }
 
-/* Share button */
 .share-btn {
     background-color: #4caf50;
     color: white;
@@ -435,7 +431,6 @@ body.export-menu-open {
     color: #aaa;
 }
 
-/* Share URL container */
 .share-url-container {
     display: flex;
     width: 100%;
@@ -451,7 +446,6 @@ body.export-menu-open {
     color: #f0f0f0;
 }
 
-/* Share code container */
 .share-code-container {
     display: flex;
     flex-direction: column;
@@ -505,7 +499,6 @@ body.export-menu-open {
     background-color: #45a049;
 }
 
-/* Added success state styling */
 .copy-btn.copy-success {
     background-color: #2e7d32;
 }
@@ -532,7 +525,6 @@ body.export-menu-open {
     font-size: 14px;
 }
 
-/* Share tabs */
 .share-tabs {
     display: flex;
     border-radius: 4px;
@@ -575,7 +567,6 @@ body.export-menu-open {
     }
 }
 
-/* Loading animation styles */
 .loading-animation {
     display: flex;
     flex-direction: column;

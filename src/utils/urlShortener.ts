@@ -86,20 +86,20 @@ function restoreDataStructure(data: any): any {
 
 export function compressData(data: any): string {
     try {
-        // Optimize data structure with shorter keys
+        
         const optimizedData = optimizeDataStructure(data);
         
-        // Convert to JSON with minimal whitespace
+        
         const jsonStr = JSON.stringify(optimizedData);
         
         // Use maximum compression level
         const compressed = deflate(jsonStr, { level: 9 });
         
-        // Return URL-safe base64 encoded string
+        
         return toBase64URL(compressed);
     } catch (error) {
         console.error('Error compressing data:', error);
-        // Fallback to simpler approach if optimization fails
+        
         const jsonStr = JSON.stringify(data);
         const compressed = deflate(jsonStr, { level: 9 });
         return toBase64URL(compressed);
@@ -108,21 +108,21 @@ export function compressData(data: any): string {
 
 export function decompressData(compressed: string): any {
     try {
-        // Decode from URL-safe base64
+        
         const binaryData = fromBase64URL(compressed);
         
-        // Decompress
+        
         const decompressed = inflate(binaryData, { to: 'string' });
         
-        // Parse JSON
+        
         const parsedData = JSON.parse(decompressed);
         
-        // Restore original field names
+        
         return restoreDataStructure(parsedData);
     } catch (error) {
         console.error('Error decompressing data:', error);
         
-        // Try to decompress using the legacy method (without field mapping)
+        
         try {
             const binaryData = fromBase64URL(compressed);
             const decompressed = inflate(binaryData, { to: 'string' });

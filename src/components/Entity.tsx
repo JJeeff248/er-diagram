@@ -60,7 +60,7 @@ export function Entity({
         setIsDragging(false);
     };
 
-    // Add/remove event listeners
+    
     useEffect(() => {
         if (isDragging) {
             window.addEventListener("mousemove", handleMouseMove);
@@ -73,7 +73,7 @@ export function Entity({
         };
     }, [isDragging]);
 
-    // Update tooltip position when hovering over an attribute
+    
     useEffect(() => {
         if (
             hoveredAttribute !== null &&
@@ -82,18 +82,18 @@ export function Entity({
             const attrElement = attributeRefs.current[hoveredAttribute];
             if (attrElement) {
                 const rect = attrElement.getBoundingClientRect();
-                // Position the tooltip above the attribute element
+                
                 setTooltipPosition({
-                    top: rect.top - 10, // Position it above the element with some margin
-                    left: rect.left + rect.width / 2, // Center it horizontally
+                    top: rect.top - 10, 
+                    left: rect.left + rect.width / 2, 
                 });
             }
         }
     }, [hoveredAttribute]);
 
-    // Get tooltip content for an attribute
+    
     const getTooltipContent = (attr: string) => {
-        // Extract column name and type for better display in tooltip
+        
         const nameTypeMatch = attr.match(
             /(?:PK:|FK:|pk:|fk:)?\s*(\w+)\s+\((\w+(?:\(\d+(?:,\d+)?\))?)\)/
         );
@@ -101,13 +101,13 @@ export function Entity({
 
         const tooltipLines = [];
 
-        // Check if it's an enum type
+        
         if (columnType && enumData[columnType]) {
             tooltipLines.push(`Type: Enum (${columnType})`);
             tooltipLines.push(`Values: ${enumData[columnType].join(", ")}`);
         }
 
-        // Check if it's a primary key
+        
         if (
             attr.toLowerCase().includes("pk:") ||
             attr.toLowerCase().includes("[primary key]") ||
@@ -117,7 +117,7 @@ export function Entity({
             tooltipLines.push("Primary Key");
         }
 
-        // Check if it's a foreign key
+        
         if (
             attr.toLowerCase().includes("[ref:") ||
             attr.toLowerCase().includes("fk:") ||
@@ -134,7 +134,7 @@ export function Entity({
             }
         }
 
-        // Add nullable information
+        
         if (
             attr.toLowerCase().includes("not null") ||
             attr.toLowerCase().includes("nn")
@@ -202,7 +202,7 @@ export function Entity({
                         }}
                     >
                         {attributes.map((attr, index) => {
-                            // Style differently based on attribute type
+                            
                             const isPrimaryKey =
                                 attr.toLowerCase().includes("pk:") ||
                                 attr.toLowerCase().includes("[primary key]") ||
@@ -214,7 +214,7 @@ export function Entity({
                                 attr.toLowerCase().includes("fk:") ||
                                 attr.toLowerCase().includes("[fk]");
 
-                            // Check if it's an enum type by extracting the type
+                            
                             const typeMatch = attr.match(
                                 /\((\w+)(?:\(\d+(?:,\d+)?\))?\)/
                             );
@@ -223,7 +223,7 @@ export function Entity({
                                 columnType &&
                                 Object.keys(enumData).includes(columnType);
 
-                            // Only show icons for special column types
+                            
                             const showIcon =
                                 isPrimaryKey || isForeignKey || isEnum;
                             let iconType = "";
@@ -325,7 +325,6 @@ export function Entity({
                 </div>
             </div>
 
-            {/* Floating Tooltip - Positioned in the document flow rather than in the entity */}
             {hoveredAttribute !== null && attributes[hoveredAttribute] && (
                 <div
                     className="attribute-tooltip"

@@ -4,41 +4,41 @@
  * that can be easily copied and pasted
  */
 
-// Function to convert diagram data to a compact code format
+
 export function diagramToShareCode(data: any): string {
-    // Custom serialization for ER diagrams
+    
     const code = {
-        // Entities with minimal data
+        
         e: data.entities.map((entity: any) => ({
             i: entity.id,
             n: entity.name,
             a: entity.attributes,
             p: entity.position
         })),
-        // Relationships with minimal data
+        
         r: data.relationships.map((rel: any) => ({
             i: rel.id,
             f: { e: rel.from.entityId, a: rel.from.attributeIndex },
             t: { e: rel.to.entityId, a: rel.to.attributeIndex },
             y: rel.type
         })),
-        // Enums
+        
         d: data.enumData,
-        // SQL input
+        
         s: data.sqlInput
     };
     
-    // Convert to JSON and remove whitespace
+    
     return JSON.stringify(code).replace(/\\n/g, '\\\\n');
 }
 
-// Function to parse share code back to diagram data
+
 export function shareCodeToDiagram(code: string): any {
     try {
-        // Parse the code
+        
         const data = JSON.parse(code.replace(/\\\\n/g, '\\n'));
         
-        // Convert back to full diagram format
+        
         return {
             entities: data.e.map((e: any) => ({
                 id: e.i,

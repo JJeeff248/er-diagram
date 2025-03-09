@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-// Helper function to check for primary key notation in different formats
+
 function checkIsPrimaryKey(text: string): boolean {
     const lowerText = text.toLowerCase();
     return (
@@ -11,7 +11,7 @@ function checkIsPrimaryKey(text: string): boolean {
     );
 }
 
-// Helper function to check for not null notation in different formats
+
 function checkIsNotNull(text: string): boolean {
     const lowerText = text.toLowerCase();
     return (
@@ -22,7 +22,7 @@ function checkIsNotNull(text: string): boolean {
     );
 }
 
-// Helper function to check for foreign key notation
+
 function checkIsForeignKey(text: string): boolean {
     const lowerText = text.toLowerCase();
     return (
@@ -69,20 +69,20 @@ export function SqlInputPanel({
     onSqlInputChange,
     onTablesGenerated,
 }: SqlInputPanelProps) {
-    // Track if this is first load or an import
+    
     const isFirstRender = useRef(true);
     const prevSqlInput = useRef(sqlInput);
 
-    // Generate diagram automatically when SQL input changes (like during import)
+    
     useEffect(() => {
-        // Skip the initial render
+        
         if (isFirstRender.current) {
             isFirstRender.current = false;
             prevSqlInput.current = sqlInput;
             return;
         }
 
-        // Only regenerate if SQL input has actually changed
+        
         if (sqlInput !== prevSqlInput.current && sqlInput.trim() !== "") {
             prevSqlInput.current = sqlInput;
             handleGenerateDiagram();
@@ -107,7 +107,7 @@ export function SqlInputPanel({
 }
 
 function parseSql(sql: string): TableDefinition[] {
-    // Match both traditional SQL, simplified syntax, and DBML
+    
     if (sql.toLowerCase().includes("create table")) {
         return parseTraditionalSql(sql);
     } else if (sql.includes("Enum") || sql.includes("enum")) {
@@ -121,7 +121,7 @@ function parseDbml(sql: string): TableDefinition[] {
     const tables: TableDefinition[] = [];
     const enums: Record<string, string[]> = {};
 
-    // Parse Enums first
+    
     const enumPattern = /Enum\s+(\w+)\s*\{([^}]*)\}/gi;
     let enumMatch;
 
@@ -129,11 +129,11 @@ function parseDbml(sql: string): TableDefinition[] {
         const enumName = enumMatch[1];
         const enumContent = enumMatch[2];
 
-        // Split by lines and get enum values
+        
         const enumValues = enumContent
             .split("\n")
             .map((line) => {
-                // Clean up the line by removing quotes, commas and extra whitespace
+                
                 return line
                     .trim()
                     .replace(/['"]/g, "")
@@ -145,7 +145,7 @@ function parseDbml(sql: string): TableDefinition[] {
         enums[enumName] = enumValues;
     }
 
-    // Parse Tables
+    
     const tablePattern = /Table\s+(\w+)\s*\{([^}]*)\}/gi;
     let tableMatch;
 
@@ -156,14 +156,14 @@ function parseDbml(sql: string): TableDefinition[] {
         const columns: ColumnDefinition[] = [];
         const foreignKeys: ForeignKeyDefinition[] = [];
 
-        // Split by lines
+        
         const lines = tableContent.split("\n");
 
         for (let line of lines) {
             line = line.trim();
             if (!line) continue;
 
-            // Basic column pattern: name type [options]
+            
             const columnPattern =
                 /(\w+)\s+(\w+(?:\(\d+(?:,\d+)?\))?)\s*(?:\[(.*)\])?/;
             const columnMatch = line.match(columnPattern);
@@ -176,7 +176,7 @@ function parseDbml(sql: string): TableDefinition[] {
                 const isPrimaryKey = checkIsPrimaryKey(options);
                 const isNullable = !checkIsNotNull(options);
 
-                // Check if this is an enum type
+                
                 const isEnum = Object.keys(enums).includes(colType);
 
                 columns.push({
@@ -197,7 +197,7 @@ function parseDbml(sql: string): TableDefinition[] {
         });
     }
 
-    // Parse references
+    
     const refPattern = /ref:\s*(\w+)\.(\w+)\s*([<\->])\s*(\w+)\.(\w+)/gi;
     let refMatch;
 
@@ -208,7 +208,7 @@ function parseDbml(sql: string): TableDefinition[] {
         const targetTable = refMatch[4];
         const targetColumn = refMatch[5];
 
-        // Find the table to add the foreign key to
+        
         const targetTableIndex = tables.findIndex(
             (t) => t.name === targetTable
         );
@@ -220,7 +220,7 @@ function parseDbml(sql: string): TableDefinition[] {
             if (relationType === "<") {
                 relType = "one-to-many";
             } else if (relationType === ">") {
-                // Swap source and target since the arrow points the other way
+                
                 tables[targetTableIndex].foreignKeys.push({
                     column: targetColumn,
                     referenceTable: sourceTable,
@@ -246,7 +246,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
     const tables: TableDefinition[] = [];
     const enums: Record<string, string[]> = {};
 
-    // First, extract any enum declarations
+    
     const enumRegex = /enum\s+(\w+)\s*\{\s*([^}]*)\s*\}/gi;
     let enumMatch;
 
@@ -260,7 +260,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
         enums[enumName] = enumValues;
     }
 
-    // Match the "Table Name {...}" pattern
+    
     const tablePattern = /Table\s+(\w+)\s*\{([^}]*)\}/g;
     let tableMatch;
 
@@ -271,15 +271,15 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
         const columns: ColumnDefinition[] = [];
         const foreignKeys: ForeignKeyDefinition[] = [];
 
-        // Split by lines
+        
         const lines = tableContent.split("\n");
 
         for (let line of lines) {
             line = line.trim();
             if (!line) continue;
 
-            // Check for column definitions
-            // Format: name type [constraints]
+            
+            
             const columnMatch = line.match(
                 /(\w+)\s+(\w+(?:\(\d+\))?)\s*(?:\[(.*)\])?/
             );
@@ -291,7 +291,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
                 const isPrimaryKey = checkIsPrimaryKey(constraints);
                 const isNullable = !checkIsNotNull(constraints);
 
-                // Check if this is an enum type
+                
                 const isEnum = Object.keys(enums).includes(type);
 
                 columns.push({
@@ -304,8 +304,8 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
                 });
             }
 
-            // Check for foreign key definitions with more flexible syntax
-            // Also support "fk" shorthand
+            
+            
             const refPattern = /(?:ref:|fk:)?\s*(\w+)\s*([<>])\s*(\w+)\.(\w+)/i;
             const refMatch = line.match(refPattern);
             if (refMatch) {
@@ -314,7 +314,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
                 const referenceTable = refMatch[3];
                 const referenceColumn = refMatch[4];
 
-                // If the direction is '>', it means this table references the other table
+                
                 if (direction === ">") {
                     foreignKeys.push({
                         column,
@@ -333,7 +333,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
         });
     }
 
-    // Check for references defined outside of tables with more flexible syntax
+    
     const globalRefPattern =
         /(?:ref:|fk:)?\s*(\w+)\.(\w+)\s*([<>])\s*(\w+)\.(\w+)/gi;
     let globalRefMatch;
@@ -345,7 +345,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
         const targetTable = globalRefMatch[4];
         const targetColumn = globalRefMatch[5];
 
-        // Only process if both tables exist
+        
         const sourceTableIndex = tables.findIndex(
             (t) => t.name === sourceTable
         );
@@ -355,7 +355,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
 
         if (sourceTableIndex >= 0 && targetTableIndex >= 0) {
             if (direction === ">") {
-                // Source references target
+                
                 tables[sourceTableIndex].foreignKeys.push({
                     column: sourceColumn,
                     referenceTable: targetTable,
@@ -363,7 +363,7 @@ function parseSimplifiedSql(sql: string): TableDefinition[] {
                     relationType: "one-to-many",
                 });
             } else {
-                // Target references source
+                
                 tables[targetTableIndex].foreignKeys.push({
                     column: targetColumn,
                     referenceTable: sourceTable,
@@ -381,7 +381,7 @@ function parseTraditionalSql(sql: string): TableDefinition[] {
     const tables: TableDefinition[] = [];
     const enums: Record<string, string[]> = {};
 
-    // First extract CREATE TYPE or ENUM definitions
+    
     const enumPattern =
         /CREATE\s+TYPE\s+(\w+)\s+AS\s+ENUM\s*\(\s*((?:'[^']*'(?:\s*,\s*'[^']*')*)\s*)\)/gi;
     let enumMatch;
@@ -390,7 +390,7 @@ function parseTraditionalSql(sql: string): TableDefinition[] {
         const enumName = enumMatch[1];
         const enumValuesStr = enumMatch[2];
 
-        // Extract values by splitting on commas and cleaning up quotes
+        
         const enumValues = enumValuesStr
             .split(",")
             .map((v) => v.trim().replace(/^'|'$/g, ""))
@@ -399,7 +399,7 @@ function parseTraditionalSql(sql: string): TableDefinition[] {
         enums[enumName] = enumValues;
     }
 
-    // Split SQL by CREATE TABLE statements
+    
     const createTablePattern =
         /CREATE\s+TABLE\s+[`"]?(\w+)[`"]?\s*\(([\s\S]*?)(?:\)[^)]*?;)/gi;
     let match;
@@ -411,15 +411,15 @@ function parseTraditionalSql(sql: string): TableDefinition[] {
         const columns: ColumnDefinition[] = [];
         const foreignKeys: ForeignKeyDefinition[] = [];
 
-        // Parse columns
+        
         const columnLines = tableContent.split(",");
 
         for (let line of columnLines) {
             line = line.trim();
 
-            // Check for foreign key constraint with more flexibility
+            
             if (checkIsForeignKey(line)) {
-                // Support both traditional and shorthand foreign key syntax
+                
                 const fkPattern =
                     /(?:FOREIGN\s+KEY|FK)\s*\(\s*[`"]?(\w+)[`"]?\s*\)\s*REFERENCES\s+[`"]?(\w+)[`"]?\s*\(\s*[`"]?(\w+)[`"]?\s*\)/i;
                 const fkMatch = line.match(fkPattern);
@@ -434,7 +434,7 @@ function parseTraditionalSql(sql: string): TableDefinition[] {
                 continue;
             }
 
-            // Parse normal column with extended pattern for shortcuts
+            
             const columnPattern =
                 /[`"]?(\w+)[`"]?\s+(\w+(?:\(\d+(?:,\d+)?\))?)\s*((?:NOT NULL|NN)?)?\s*((?:PRIMARY KEY|PK)?)?/i;
             const columnMatch = line.match(columnPattern);
@@ -445,13 +445,13 @@ function parseTraditionalSql(sql: string): TableDefinition[] {
                 const notNullFlag = columnMatch[3] || "";
                 const pkFlag = columnMatch[4] || "";
 
-                // Check for shortened notations
+                
                 const isNullable = !checkIsNotNull(notNullFlag);
                 const isPrimaryKey =
                     checkIsPrimaryKey(pkFlag) ||
                     name.toLowerCase().startsWith("pk_");
 
-                // Check if this is an enum type
+                
                 const isEnum = Object.keys(enums).includes(type);
 
                 columns.push({
