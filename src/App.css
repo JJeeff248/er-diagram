@@ -6,6 +6,18 @@ body {
     color: #f0f0f0;
 }
 
+/* Import Font Awesome for icons */
+@font-face {
+    font-family: "Font Awesome 5 Free";
+    font-style: normal;
+    font-weight: 900;
+    font-display: block;
+    src: url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/webfonts/fa-solid-900.woff2)
+            format("woff2"),
+        url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/webfonts/fa-solid-900.woff)
+            format("woff");
+}
+
 .er-diagram-app {
     display: flex;
     flex-direction: column;
@@ -33,27 +45,36 @@ body {
 
 .toolbar {
     display: flex;
-    align-items: center;
     gap: 10px;
 }
 
 .toolbar button {
-    background-color: #3a3a3a;
+    background-color: rgba(255, 255, 255, 0.1);
     color: #f0f0f0;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+}
+
+/* Icon styling */
+.toolbar button i {
+    font-size: 16px;
+    color: white;
 }
 
 .toolbar button:hover {
-    background-color: #4a4a4a;
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .toolbar button:active {
-    transform: translateY(1px);
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .app-main {
@@ -353,4 +374,112 @@ body.resizing {
 /* Ensure the body remains non-scrollable when export menu is active */
 body.export-menu-open {
     overflow: hidden;
+}
+
+/* Share button */
+.share-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.share-btn:hover {
+    background-color: #45a049;
+}
+
+/* Share Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.share-modal-container {
+    padding: 20px;
+    background-color: #252525;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 600px;
+    border: 1px solid #333;
+}
+
+.share-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.share-modal h3 {
+    margin: 0;
+    color: #f0f0f0;
+    font-size: 18px;
+}
+
+.share-modal p {
+    margin: 0;
+    color: #aaa;
+}
+
+.share-url-container {
+    display: flex;
+    width: 100%;
+}
+
+.share-url-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #444;
+    border-radius: 4px 0 0 4px;
+    font-size: 14px;
+    background-color: #333;
+    color: #f0f0f0;
+}
+
+.copy-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.copy-btn:hover {
+    background-color: #45a049;
+}
+
+/* Added success state styling */
+.copy-btn.copy-success {
+    background-color: #2e7d32;
+}
+
+.close-btn {
+    background-color: #333;
+    color: #f0f0f0;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-end;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.close-btn:hover {
+    background-color: #444;
 }
