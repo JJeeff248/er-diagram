@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { DiagramCanvas } from "./components/DiagramCanvas";
 import { SqlInputPanel } from "./components/SqlInputPanel";
+import { compressData, decompressData } from "./utils/urlShortener";
+import { diagramToShareCode, shareCodeToDiagram } from "./utils/shareCode";
 import "./App.css";
 
 function App() {
@@ -9,13 +11,19 @@ function App() {
     const [isResizing, setIsResizing] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showShareCodeModal, setShowShareCodeModal] = useState(false);
+    const [showImportCodeModal, setShowImportCodeModal] = useState(false);
     const [shareUrl, setShareUrl] = useState("");
     const [copySuccess, setCopySuccess] = useState(false);
+    const [shareCode, setShareCode] = useState("");
+    const [importCode, setImportCode] = useState("");
+    const [importError, setImportError] = useState("");
     const shareUrlInputRef = useRef<HTMLInputElement>(null);
     const diagramCanvasRef = useRef<any>(null);
     const appMainRef = useRef<HTMLDivElement>(null);
     const exportMenuRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const shareCodeRef = useRef<HTMLTextAreaElement>(null);
 
     // Check URL hash on initial load
     useEffect(() => {
@@ -23,7 +31,7 @@ function App() {
             try {
                 // Remove the leading # and decode the data
                 const hashData = window.location.hash.substring(1);
-                const jsonData = JSON.parse(atob(hashData));
+                const jsonData = decompressData(hashData);
 
                 // Once DOM is ready, import the data
                 setTimeout(() => {
@@ -42,7 +50,12 @@ function App() {
                 }, 100);
             } catch (error) {
                 console.error("Error loading diagram from URL:", error);
-                alert("The shared diagram data is invalid or corrupted.");
+                // Show a more helpful error message
+                const errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "The shared diagram data is invalid or corrupted.";
+                alert(`Error loading diagram: ${errorMessage}`);
             }
         }
     }, []);
@@ -145,29 +158,39 @@ function App() {
         setShowExportMenu((prev) => !prev);
     };
 
-    // Share diagram via URL
-    const shareDiagram = () => {
+    // Prepare data for sharing
+    const prepareExportData = () => {
         if (
             !diagramCanvasRef.current ||
             !diagramCanvasRef.current.getExportData
         ) {
             console.error("Export data method not available");
-            return;
+            return null;
         }
 
         // Get diagram data and add SQL input to it
         const diagramData = diagramCanvasRef.current.getExportData();
-        const exportData = {
+        const data = {
             ...diagramData,
             sqlInput, // Include the SQL input in the export data
         };
 
-        // Convert to base64 string to make it URL-safe
-        const jsonStr = JSON.stringify(exportData);
-        const base64Data = btoa(jsonStr);
+        return data;
+    };
+
+    // Share diagram via URL
+    const shareDiagram = () => {
+        const data = prepareExportData();
+        if (!data) return;
+
+        // Convert to compressed string
+        const compressedData = compressData(data);
+        console.log(
+            `Compressed URL hash size: ${compressedData.length} characters`
+        );
 
         // Create shareable URL with hash
-        const url = `${window.location.origin}${window.location.pathname}#${base64Data}`;
+        const url = `${window.location.origin}${window.location.pathname}#${compressedData}`;
         setShareUrl(url);
         setShowShareModal(true);
 
@@ -186,6 +209,38 @@ function App() {
             document.execCommand("copy");
             // Or use the modern clipboard API:
             // navigator.clipboard.writeText(shareUrl);
+
+            // Show success state temporarily
+            setCopySuccess(true);
+            setTimeout(() => {
+                setCopySuccess(false);
+            }, 2000);
+        }
+    };
+
+    // Share diagram via code snippet
+    const shareViaCode = () => {
+        const data = prepareExportData();
+        if (!data) return;
+
+        // Convert to share code
+        const code = diagramToShareCode(data);
+        setShareCode(code);
+        setShowShareCodeModal(true);
+
+        // Select the code once the textarea is rendered
+        setTimeout(() => {
+            if (shareCodeRef.current) {
+                shareCodeRef.current.select();
+            }
+        }, 100);
+    };
+
+    // Copy share code to clipboard
+    const copyShareCode = () => {
+        if (shareCodeRef.current) {
+            shareCodeRef.current.select();
+            document.execCommand("copy");
 
             // Show success state temporarily
             setCopySuccess(true);
@@ -355,6 +410,43 @@ function App() {
         }
     };
 
+    // Show import code modal
+    const showImportCodeDialog = () => {
+        setImportCode("");
+        setImportError("");
+        setShowImportCodeModal(true);
+    };
+
+    // Import diagram from code
+    const importFromCode = () => {
+        if (!importCode.trim()) {
+            setImportError("Please enter a share code");
+            return;
+        }
+
+        try {
+            const importedData = shareCodeToDiagram(importCode);
+
+            if (
+                diagramCanvasRef.current &&
+                diagramCanvasRef.current.handleImportFromJson
+            ) {
+                const success =
+                    diagramCanvasRef.current.handleImportFromJson(importedData);
+
+                if (success && importedData.sqlInput) {
+                    setSqlInput(importedData.sqlInput);
+                    setShowImportCodeModal(false);
+                } else {
+                    setImportError("Failed to import diagram");
+                }
+            }
+        } catch (error) {
+            console.error("Error importing from code:", error);
+            setImportError("Invalid share code format");
+        }
+    };
+
     return (
         <div className="er-diagram-app">
             <header className="app-header">
@@ -387,8 +479,17 @@ function App() {
                             </div>
                         )}
                     </div>
-                    <button onClick={shareDiagram} title="Share Diagram">
+                    <button onClick={shareDiagram} title="Share Diagram URL">
                         <i className="fas fa-share"></i>
+                    </button>
+                    <button onClick={shareViaCode} title="Share Diagram Code">
+                        <i className="fas fa-code"></i>
+                    </button>
+                    <button
+                        onClick={showImportCodeDialog}
+                        title="Import From Code"
+                    >
+                        <i className="fas fa-paste"></i>
                     </button>
                     <input
                         type="file"
@@ -420,7 +521,7 @@ function App() {
                 <DiagramCanvas ref={diagramCanvasRef} />
             </main>
 
-            {/* Share Modal */}
+            {/* Share URL Modal */}
             {showShareModal && (
                 <div className="modal-overlay">
                     <div className="share-modal-container">
@@ -452,6 +553,86 @@ function App() {
                             >
                                 Close
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Share Code Modal */}
+            {showShareCodeModal && (
+                <div className="modal-overlay">
+                    <div className="share-modal-container">
+                        <div className="share-modal">
+                            <h3>Share your ER Diagram Code</h3>
+                            <p>
+                                Copy this code to share your diagram with
+                                others:
+                            </p>
+                            <div className="share-code-container">
+                                <textarea
+                                    value={shareCode}
+                                    readOnly
+                                    ref={shareCodeRef}
+                                    className="share-code-input"
+                                    rows={5}
+                                />
+                                <button
+                                    onClick={copyShareCode}
+                                    className={`copy-btn ${
+                                        copySuccess ? "copy-success" : ""
+                                    }`}
+                                >
+                                    {copySuccess ? "Copied!" : "Copy"}
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => setShowShareCodeModal(false)}
+                                className="close-btn"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Code Modal */}
+            {showImportCodeModal && (
+                <div className="modal-overlay">
+                    <div className="share-modal-container">
+                        <div className="share-modal">
+                            <h3>Import ER Diagram from Code</h3>
+                            <p>Paste the shared code below:</p>
+                            <div className="import-code-container">
+                                <textarea
+                                    value={importCode}
+                                    onChange={(e) =>
+                                        setImportCode(e.target.value)
+                                    }
+                                    className="share-code-input"
+                                    rows={5}
+                                    placeholder="Paste share code here..."
+                                />
+                            </div>
+                            {importError && (
+                                <p className="error-message">{importError}</p>
+                            )}
+                            <div className="modal-buttons">
+                                <button
+                                    onClick={importFromCode}
+                                    className="import-btn"
+                                >
+                                    Import
+                                </button>
+                                <button
+                                    onClick={() =>
+                                        setShowImportCodeModal(false)
+                                    }
+                                    className="close-btn"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

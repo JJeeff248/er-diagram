@@ -46,6 +46,7 @@ body {
 .toolbar {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .toolbar button {
@@ -393,7 +394,7 @@ body.export-menu-open {
     background-color: #45a049;
 }
 
-/* Share Modal */
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -413,7 +414,7 @@ body.export-menu-open {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     width: 90%;
-    max-width: 600px;
+    max-width: 550px;
     border: 1px solid #333;
 }
 
@@ -434,6 +435,7 @@ body.export-menu-open {
     color: #aaa;
 }
 
+/* Share URL container */
 .share-url-container {
     display: flex;
     width: 100%;
@@ -449,18 +451,57 @@ body.export-menu-open {
     color: #f0f0f0;
 }
 
-.copy-btn {
+/* Share code container */
+.share-code-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+}
+
+.share-code-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #333;
+    color: #f0f0f0;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 120px;
+    box-sizing: border-box;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.import-code-container {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Button styles */
+.copy-btn,
+.import-btn,
+.close-btn {
     background-color: #4caf50;
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s ease;
+    min-width: 80px;
+    text-align: center;
 }
 
-.copy-btn:hover {
+.share-url-container .copy-btn {
+    border-radius: 0 4px 4px 0;
+}
+
+.copy-btn:hover,
+.import-btn:hover {
     background-color: #45a049;
 }
 
@@ -470,17 +511,23 @@ body.export-menu-open {
 }
 
 .close-btn {
-    background-color: #333;
-    color: #f0f0f0;
-    border: 1px solid #444;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    align-self: flex-end;
-    margin-top: 10px;
-    font-size: 14px;
+    background-color: #666;
+    margin-left: auto;
 }
 
 .close-btn:hover {
-    background-color: #444;
+    background-color: #777;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.error-message {
+    color: #ff6b6b;
+    margin: 5px 0;
+    font-size: 14px;
 }
