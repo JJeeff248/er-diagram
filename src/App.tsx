@@ -13,6 +13,7 @@ function App() {
     const diagramCanvasRef = useRef<any>(null);
     const appMainRef = useRef<HTMLDivElement>(null);
     const exportMenuRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleTablesGenerated = (tables: any[]) => {
         if (
@@ -114,19 +115,24 @@ function App() {
 
         // Use html2canvas to capture the diagram
         import("html2canvas").then(({ default: html2canvas }) => {
-            html2canvas(canvasElement, {
+            // Using 'as any' to bypass TypeScript errors due to type definition mismatch
+            const options = {
                 backgroundColor: "#f5f5f5",
                 scale: 2, // Better quality
                 logging: false,
                 allowTaint: true,
                 useCORS: true,
-            }).then((canvas: HTMLCanvasElement) => {
-                // Create download link
-                const link = document.createElement("a");
-                link.download = `er-diagram.${format}`;
-                link.href = canvas.toDataURL(`image/${format}`);
-                link.click();
-            });
+            } as any;
+
+            html2canvas(canvasElement, options).then(
+                (canvas: HTMLCanvasElement) => {
+                    // Create download link
+                    const link = document.createElement("a");
+                    link.download = `er-diagram.${format}`;
+                    link.href = canvas.toDataURL(`image/${format}`);
+                    link.click();
+                }
+            );
         });
 
         setShowExportMenu(false);
@@ -174,8 +180,14 @@ function App() {
             return;
         }
 
-        const data = diagramCanvasRef.current.getExportData();
-        const jsonStr = JSON.stringify(data, null, 2);
+        // Get diagram data and add SQL input to it
+        const diagramData = diagramCanvasRef.current.getExportData();
+        const exportData = {
+            ...diagramData,
+            sqlInput, // Include the SQL input in the export data
+        };
+
+        const jsonStr = JSON.stringify(exportData, null, 2);
 
         // Create a Blob with the JSON content
         const blob = new Blob([jsonStr], { type: "application/json" });
@@ -190,6 +202,67 @@ function App() {
         // Clean up
         URL.revokeObjectURL(url);
         setShowExportMenu(false);
+    };
+
+    const handleImportClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            if (file.type === "application/json") {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    if (event.target && event.target.result) {
+                        try {
+                            const jsonData = JSON.parse(
+                                event.target.result as string
+                            );
+
+                            if (
+                                diagramCanvasRef.current &&
+                                diagramCanvasRef.current.handleImportFromJson
+                            ) {
+                                // Import diagram data
+                                const success =
+                                    diagramCanvasRef.current.handleImportFromJson(
+                                        jsonData
+                                    );
+
+                                if (success) {
+                                    // Set the SQL input if it exists in the imported data
+                                    if (jsonData.sqlInput) {
+                                        setSqlInput(jsonData.sqlInput);
+                                    }
+
+                                    // Removed success alert
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Error parsing JSON:", error);
+                            alert(
+                                `Error importing diagram: ${
+                                    error instanceof Error
+                                        ? error.message
+                                        : "Invalid JSON format"
+                                }`
+                            );
+                        }
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Please select a JSON file");
+            }
+        }
+
+        // Reset the file input so the same file can be selected again
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     };
 
     return (
@@ -218,6 +291,19 @@ function App() {
                             </div>
                         )}
                     </div>
+                    <button onClick={handleImportClick}>Import Diagram</button>
+                    <input
+                        type="file"
+                        id="import-json-input"
+                        accept=".json"
+                        style={{ display: "none" }}
+                        onChange={handleFileImport}
+                        ref={(input) => {
+                            if (input) {
+                                fileInputRef.current = input;
+                            }
+                        }}
+                    />
                 </div>
             </header>
 

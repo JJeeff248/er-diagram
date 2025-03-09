@@ -56,6 +56,81 @@ export const DiagramCanvas = forwardRef((props, ref) => {
             relationships,
             enumData,
         }),
+        handleImportFromJson: (data: {
+            entities: EntityData[];
+            relationships: RelationshipData[];
+            enumData: Record<string, string[]>;
+            sqlInput?: string; // Optional SQL input field
+        }) => {
+            try {
+                // Validate imported data
+                if (
+                    !Array.isArray(data.entities) ||
+                    !Array.isArray(data.relationships)
+                ) {
+                    throw new Error(
+                        "Invalid JSON format: entities and relationships must be arrays"
+                    );
+                }
+
+                // Validate that each entity has the required properties
+                for (const entity of data.entities) {
+                    if (
+                        !entity.id ||
+                        !entity.name ||
+                        !Array.isArray(entity.attributes) ||
+                        !entity.position ||
+                        typeof entity.position.x !== "number" ||
+                        typeof entity.position.y !== "number"
+                    ) {
+                        throw new Error(
+                            "Invalid entity format in imported data"
+                        );
+                    }
+                }
+
+                // Validate relationships
+                for (const relationship of data.relationships) {
+                    if (
+                        !relationship.id ||
+                        !relationship.from ||
+                        !relationship.to ||
+                        !relationship.type
+                    ) {
+                        throw new Error(
+                            "Invalid relationship format in imported data"
+                        );
+                    }
+                }
+
+                // If enumData is present, validate it
+                let importedEnumData = {};
+                if (data.enumData && typeof data.enumData === "object") {
+                    importedEnumData = data.enumData;
+                }
+
+                // Set the data to state
+                setEntities(data.entities);
+                setRelationships(data.relationships);
+                setEnumData(importedEnumData);
+
+                // Reset selection
+                setSelectedEntityId(null);
+                setSelectedRelationshipId(null);
+
+                return true;
+            } catch (error) {
+                console.error("Error importing diagram:", error);
+                alert(
+                    `Error importing diagram: ${
+                        error instanceof Error
+                            ? error.message
+                            : "Invalid format"
+                    }`
+                );
+                return false;
+            }
+        },
     }));
 
     const handleAddEntity = () => {

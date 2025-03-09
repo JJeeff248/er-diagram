@@ -1,4 +1,4 @@
-// import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 // Helper function to check for primary key notation in different formats
 function checkIsPrimaryKey(text: string): boolean {
@@ -69,6 +69,26 @@ export function SqlInputPanel({
     onSqlInputChange,
     onTablesGenerated,
 }: SqlInputPanelProps) {
+    // Track if this is first load or an import
+    const isFirstRender = useRef(true);
+    const prevSqlInput = useRef(sqlInput);
+
+    // Generate diagram automatically when SQL input changes (like during import)
+    useEffect(() => {
+        // Skip the initial render
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            prevSqlInput.current = sqlInput;
+            return;
+        }
+
+        // Only regenerate if SQL input has actually changed
+        if (sqlInput !== prevSqlInput.current && sqlInput.trim() !== "") {
+            prevSqlInput.current = sqlInput;
+            handleGenerateDiagram();
+        }
+    }, [sqlInput]);
+
     const handleGenerateDiagram = () => {
         const tables = parseSql(sqlInput);
         onTablesGenerated(tables);
