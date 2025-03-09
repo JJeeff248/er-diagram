@@ -11,11 +11,11 @@ function App() {
     const [isResizing, setIsResizing] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
-    const [showShareCodeModal, setShowShareCodeModal] = useState(false);
     const [showImportCodeModal, setShowImportCodeModal] = useState(false);
     const [shareUrl, setShareUrl] = useState("");
-    const [copySuccess, setCopySuccess] = useState(false);
     const [shareCode, setShareCode] = useState("");
+    const [activeShareTab, setActiveShareTab] = useState<"url" | "code">("url");
+    const [copySuccess, setCopySuccess] = useState(false);
     const [importCode, setImportCode] = useState("");
     const [importError, setImportError] = useState("");
     const shareUrlInputRef = useRef<HTMLInputElement>(null);
@@ -178,76 +178,49 @@ function App() {
         return data;
     };
 
-    // Share diagram via URL
-    const shareDiagram = () => {
+    // Open share modal with tabs
+    const openShareModal = () => {
         const data = prepareExportData();
         if (!data) return;
 
-        // Convert to compressed string
+        // Generate URL
         const compressedData = compressData(data);
-        console.log(
-            `Compressed URL hash size: ${compressedData.length} characters`
-        );
-
-        // Create shareable URL with hash
         const url = `${window.location.origin}${window.location.pathname}#${compressedData}`;
         setShareUrl(url);
-        setShowShareModal(true);
 
-        // Select the URL text once the input is rendered
-        setTimeout(() => {
-            if (shareUrlInputRef.current) {
-                shareUrlInputRef.current.select();
-            }
-        }, 100);
-    };
-
-    // Copy share URL to clipboard
-    const copyShareUrl = () => {
-        if (shareUrlInputRef.current) {
-            shareUrlInputRef.current.select();
-            document.execCommand("copy");
-            // Or use the modern clipboard API:
-            // navigator.clipboard.writeText(shareUrl);
-
-            // Show success state temporarily
-            setCopySuccess(true);
-            setTimeout(() => {
-                setCopySuccess(false);
-            }, 2000);
-        }
-    };
-
-    // Share diagram via code snippet
-    const shareViaCode = () => {
-        const data = prepareExportData();
-        if (!data) return;
-
-        // Convert to share code
+        // Generate code
         const code = diagramToShareCode(data);
         setShareCode(code);
-        setShowShareCodeModal(true);
 
-        // Select the code once the textarea is rendered
+        // Show modal
+        setShowShareModal(true);
+        setActiveShareTab("url"); // Default to URL tab
+
+        // Focus appropriate field based on active tab
         setTimeout(() => {
-            if (shareCodeRef.current) {
+            if (activeShareTab === "url" && shareUrlInputRef.current) {
+                shareUrlInputRef.current.select();
+            } else if (activeShareTab === "code" && shareCodeRef.current) {
                 shareCodeRef.current.select();
             }
         }, 100);
     };
 
-    // Copy share code to clipboard
-    const copyShareCode = () => {
-        if (shareCodeRef.current) {
+    // Copy either URL or code to clipboard
+    const copyToClipboard = () => {
+        if (activeShareTab === "url" && shareUrlInputRef.current) {
+            shareUrlInputRef.current.select();
+            document.execCommand("copy");
+        } else if (activeShareTab === "code" && shareCodeRef.current) {
             shareCodeRef.current.select();
             document.execCommand("copy");
-
-            // Show success state temporarily
-            setCopySuccess(true);
-            setTimeout(() => {
-                setCopySuccess(false);
-            }, 2000);
         }
+
+        // Show success state
+        setCopySuccess(true);
+        setTimeout(() => {
+            setCopySuccess(false);
+        }, 2000);
     };
 
     const exportAsImage = (format: "png" | "jpeg") => {
@@ -479,11 +452,8 @@ function App() {
                             </div>
                         )}
                     </div>
-                    <button onClick={shareDiagram} title="Share Diagram URL">
+                    <button onClick={openShareModal} title="Share Diagram">
                         <i className="fas fa-share"></i>
-                    </button>
-                    <button onClick={shareViaCode} title="Share Diagram Code">
-                        <i className="fas fa-code"></i>
                     </button>
                     <button
                         onClick={showImportCodeDialog}
@@ -521,72 +491,106 @@ function App() {
                 <DiagramCanvas ref={diagramCanvasRef} />
             </main>
 
-            {/* Share URL Modal */}
+            {/* Combined Share Modal with Tabs */}
             {showShareModal && (
                 <div className="modal-overlay">
                     <div className="share-modal-container">
                         <div className="share-modal">
                             <h3>Share your ER Diagram</h3>
-                            <p>
-                                Copy this URL to share your diagram with others:
-                            </p>
-                            <div className="share-url-container">
-                                <input
-                                    type="text"
-                                    value={shareUrl}
-                                    readOnly
-                                    ref={shareUrlInputRef}
-                                    className="share-url-input"
-                                />
+
+                            <div className="share-tabs">
                                 <button
-                                    onClick={copyShareUrl}
-                                    className={`copy-btn ${
-                                        copySuccess ? "copy-success" : ""
+                                    className={`tab-btn ${
+                                        activeShareTab === "url" ? "active" : ""
                                     }`}
+                                    onClick={() => {
+                                        setActiveShareTab("url");
+                                        setTimeout(() => {
+                                            if (shareUrlInputRef.current) {
+                                                shareUrlInputRef.current.select();
+                                            }
+                                        }, 50);
+                                    }}
                                 >
-                                    {copySuccess ? "Copied!" : "Copy"}
+                                    Share URL
+                                </button>
+                                <button
+                                    className={`tab-btn ${
+                                        activeShareTab === "code"
+                                            ? "active"
+                                            : ""
+                                    }`}
+                                    onClick={() => {
+                                        setActiveShareTab("code");
+                                        setTimeout(() => {
+                                            if (shareCodeRef.current) {
+                                                shareCodeRef.current.select();
+                                            }
+                                        }, 50);
+                                    }}
+                                >
+                                    Share Code
                                 </button>
                             </div>
+
+                            {activeShareTab === "url" && (
+                                <div className="share-tab-content">
+                                    <p>
+                                        Copy this URL to share your diagram with
+                                        others:
+                                    </p>
+                                    <div className="share-url-container">
+                                        <input
+                                            type="text"
+                                            value={shareUrl}
+                                            readOnly
+                                            ref={shareUrlInputRef}
+                                            className="share-url-input"
+                                        />
+                                        <button
+                                            onClick={copyToClipboard}
+                                            className={`copy-btn ${
+                                                copySuccess
+                                                    ? "copy-success"
+                                                    : ""
+                                            }`}
+                                        >
+                                            {copySuccess ? "Copied!" : "Copy"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeShareTab === "code" && (
+                                <div className="share-tab-content">
+                                    <p>
+                                        Copy this code to share your diagram
+                                        with others:
+                                    </p>
+                                    <div className="share-code-container">
+                                        <textarea
+                                            value={shareCode}
+                                            readOnly
+                                            ref={shareCodeRef}
+                                            className="share-code-input"
+                                            rows={5}
+                                        />
+                                        <button
+                                            onClick={copyToClipboard}
+                                            className={`copy-btn ${
+                                                copySuccess
+                                                    ? "copy-success"
+                                                    : ""
+                                            }`}
+                                        >
+                                            {copySuccess ? "Copied!" : "Copy"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <button
                                 onClick={() => setShowShareModal(false)}
-                                className="close-btn"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Share Code Modal */}
-            {showShareCodeModal && (
-                <div className="modal-overlay">
-                    <div className="share-modal-container">
-                        <div className="share-modal">
-                            <h3>Share your ER Diagram Code</h3>
-                            <p>
-                                Copy this code to share your diagram with
-                                others:
-                            </p>
-                            <div className="share-code-container">
-                                <textarea
-                                    value={shareCode}
-                                    readOnly
-                                    ref={shareCodeRef}
-                                    className="share-code-input"
-                                    rows={5}
-                                />
-                                <button
-                                    onClick={copyShareCode}
-                                    className={`copy-btn ${
-                                        copySuccess ? "copy-success" : ""
-                                    }`}
-                                >
-                                    {copySuccess ? "Copied!" : "Copy"}
-                                </button>
-                            </div>
-                            <button
-                                onClick={() => setShowShareCodeModal(false)}
                                 className="close-btn"
                             >
                                 Close

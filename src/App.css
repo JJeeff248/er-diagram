@@ -531,3 +531,46 @@ body.export-menu-open {
     margin: 5px 0;
     font-size: 14px;
 }
+
+/* Share tabs */
+.share-tabs {
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #333;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    flex: 1;
+    background-color: #333;
+    color: #ccc;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.tab-btn:first-child {
+    border-right: 1px solid #222;
+}
+
+.tab-btn.active {
+    background-color: #444;
+    color: #fff;
+    font-weight: 500;
+}
+
+.share-tab-content {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
