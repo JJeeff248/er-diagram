@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import parse from "../utils/parser";
 
 
 function checkIsPrimaryKey(text: string): boolean {
@@ -69,19 +70,18 @@ export function SqlInputPanel({
     onSqlInputChange,
     onTablesGenerated,
 }: SqlInputPanelProps) {
-    
     const isFirstRender = useRef(true);
     const prevSqlInput = useRef(sqlInput);
 
     
     useEffect(() => {
-        
         if (isFirstRender.current) {
             isFirstRender.current = false;
             prevSqlInput.current = sqlInput;
             return;
         }
-
+        
+        parse(sqlInput);
         
         if (sqlInput !== prevSqlInput.current && sqlInput.trim() !== "") {
             prevSqlInput.current = sqlInput;

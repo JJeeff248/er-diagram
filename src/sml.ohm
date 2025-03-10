@@ -1,0 +1,19 @@
+SML {
+    Schema = Definition*
+    Definition = Table | Enum | Relation
+    Table = caseInsensitive<"Table "> string ("as " string)? "{" ((Attribute+ (NoteProp #delimitedNewline)? Attribute*) | (Attribute* (NoteProp #delimitedNewline)? Attribute+)) "}"
+    Enum = caseInsensitive<"Enum "> string "{" (string #delimitedNewline)+ "}"
+    Relation = caseInsensitive<"ref "> (string)? ":" columnRef arrow columnRef (#newline | end)
+    Attribute = string string  ("[" (Property delimeter) + "]")? #delimitedNewline
+    Property = caseInsensitive<"pk"> | caseInsensitive<"increment"> | caseInsensitive<"unique"> | caseInsensitive<"nn"> |
+               NoteProp | RefProp
+    NoteProp = caseInsensitive<"note"> ":" (("\"" string "\"") | ("\'" string "\'"))
+    RefProp = caseInsensitive<"ref"> ":" arrow columnRef
+
+    string = letter+
+    columnRef = string "." string
+    arrow = "<" | "-" | ">"
+    delimeter = ("," | ";")?
+    delimitedNewline = (" " | "\t")* delimeter newline
+    newline = (" " | "\t")* ("\n" | &"}")
+}
