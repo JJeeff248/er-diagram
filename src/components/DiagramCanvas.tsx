@@ -23,9 +23,7 @@ export function DiagramCanvas() {
 
     const [entities, setEntities] = useState<TableEntity[]>([]);
     // const [relationships, setRelationships] = useState<RelationshipData[]>([]);
-    const [selectedEntityId, setSelectedEntityId] = useState<string | null>(
-        null
-    );
+    const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
     // const [selectedRelationshipId, setSelectedRelationshipId] = useState<
     //     string | null
     // >(null);
@@ -37,6 +35,14 @@ export function DiagramCanvas() {
             table
         })));
     }, [tables]);
+    
+    const onEntityMove = (id: string, position: { x: number; y: number }) => {
+        setEntities((prev) =>
+            prev.map((e) => (e.id === id ? { ...e, position } : e))
+        );
+    };
+
+    // const onEntitySelect = (id: string) => setSelectedEntityId(id);
 
     return (
         <div
@@ -100,8 +106,8 @@ export function DiagramCanvas() {
                             entity={entity}
                             key={entity.id}
                             isSelected={selectedEntityId === entity.id}
-                            onSelect={() => {}}
-                            onMove={() => {}}
+                            onSelect={(id: string | null) => { setSelectedEntityId(id); }}
+                            onMove={onEntityMove}
                         />
                     ))}
                 </>

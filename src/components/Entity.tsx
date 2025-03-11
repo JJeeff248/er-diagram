@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { TableEntity } from "../types/visualization";
+import "../styles/Entity.css";
 
 interface EntityProps {
     entity: TableEntity;
@@ -15,57 +16,51 @@ export function Entity({
     onSelect,
     onMove,
 }: EntityProps) {
-    // const [isDragging, setIsDragging] = useState(false);
-    // const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-    // const [hoveredAttribute, setHoveredAttribute] = useState<number | null>(
-    //     null
-    // );
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [hoveredAttribute, setHoveredAttribute] = useState<number | null>(null);
     // const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-    // const entityRef = useRef<HTMLDivElement>(null);
-    // const attributeRefs = useRef<(HTMLLIElement | null)[]>([]);
+    const entityRef = useRef<HTMLDivElement>(null);
+    const attributeRefs = useRef<(HTMLLIElement | null)[]>([]);
 
-    // const handleMouseDown = (e: React.MouseEvent) => {
-    //     if (entityRef.current) {
-    //         const rect = entityRef.current.getBoundingClientRect();
-    //         setDragOffset({
-    //             x: e.clientX - rect.left,
-    //             y: e.clientY - rect.top,
-    //         });
-    //         setIsDragging(true);
-    //         onSelect(id);
-    //         e.stopPropagation();
-    //     }
-    // };
+    const handleMouseUp = () => setIsDragging(false);
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (entityRef.current) {
+            const rect = entityRef.current.getBoundingClientRect();
+            setDragOffset({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+            });
+            setIsDragging(true);
+            onSelect(entity.id);
+            e.stopPropagation();
+        }
+    };
 
-    // const handleMouseMove = (e: MouseEvent) => {
-    //     if (isDragging && entityRef.current) {
-    //         const container = entityRef.current.parentElement;
-    //         if (container) {
-    //             const containerRect = container.getBoundingClientRect();
-    //             const newX = e.clientX - containerRect.left - dragOffset.x;
-    //             const newY = e.clientY - containerRect.top - dragOffset.y;
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (isDragging && entityRef.current) {
+            const container = entityRef.current.parentElement;
+            if (container) {
+                const containerRect = container.getBoundingClientRect();
+                const newX = e.clientX - containerRect.left - dragOffset.x;
+                const newY = e.clientY - containerRect.top - dragOffset.y;
 
-    //             onMove(id, { x: newX, y: newY });
-    //         }
-    //     }
-    // };
+                onMove(entity.id, { x: newX, y: newY });
+            }
+        }
+    }, [dragOffset.x, dragOffset.y, entity.id, isDragging, onMove]);
 
-    // const handleMouseUp = () => {
-    //     setIsDragging(false);
-    // };
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseup", handleMouseUp);
+        }
 
-    
-    // useEffect(() => {
-    //     if (isDragging) {
-    //         window.addEventListener("mousemove", handleMouseMove);
-    //         window.addEventListener("mouseup", handleMouseUp);
-    //     }
-
-    //     return () => {
-    //         window.removeEventListener("mousemove", handleMouseMove);
-    //         window.removeEventListener("mouseup", handleMouseUp);
-    //     };
-    // }, [isDragging]);
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [handleMouseMove, isDragging]);
 
     
     // useEffect(() => {
@@ -93,157 +88,40 @@ export function Entity({
     return (
         <>
             <div
-                // ref={entityRef}
+                ref={entityRef}
                 className="entity"
                 style={{
-                    position: "absolute",
                     left: `${entity.position.x}px`,
                     top: `${entity.position.y}px`,
-                    border: `2px solid ${isSelected ? "#61dafb" : "#555"}`,
-                    borderRadius: "8px",
-                    backgroundColor: "#2a2a2a",
-                    minWidth: "200px",
-                    // cursor: isDragging ? "grabbing" : "grab",
-                    boxShadow: isSelected
-                        ? "0 0 0 2px #61dafb, 0 4px 16px rgba(0,0,0,0.4)"
-                        : "0 4px 8px rgba(0,0,0,0.3)",
-                    overflow: "hidden",
-                    fontFamily:
-                        "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+                    cursor: isDragging ? "grabbing" : "grab",
+                    boxShadow: isSelected ? "0 0 0 2px #61dafb, 0 4px 16px rgba(0,0,0,0.4)" : "0 4px 8px rgba(0,0,0,0.3)",
                     zIndex: isSelected ? 2 : 1,
-                    transition: "box-shadow 0.2s ease-in-out",
                 }}
-                // onMouseDown={handleMouseDown}
-                // onClick={(e) => {
-                //     e.stopPropagation();
-                //     onSelect(id);
-                // }}
+                onMouseDown={handleMouseDown}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(entity.id);
+                }}
             >
-                <div
-                    className="entity-header"
-                    style={{
-                        padding: "12px 16px",
-                        borderBottom: "1px solid #444",
-                        fontWeight: "bold",
-                        fontSize: "16px",
-                        textAlign: "center",
-                        backgroundColor: "#383838",
-                        color: "#f8f8f8",
-                        position: "relative",
-                    }}
-                >
-                    {entity.table.name}
-                </div>
-                {/* <div className="entity-attributes" style={{ padding: "8px 0" }}>
-                    <ul
-                        style={{
-                            listStyle: "none",
-                            padding: 0,
-                            margin: 0,
-                            maxHeight: "400px",
-                            overflowY: "auto",
-                        }}
-                    >
-                        {attributes.map((attr, index) => {
-                            const showIcon =
-                                isPrimaryKey || isForeignKey || isEnum;
-                            let iconType = "";
-                            let itemColor = "#e0e0e0";
-
-                            if (isPrimaryKey) {
-                                iconType = "key";
-                                itemColor = "#ffd700";
-                            } else if (isForeignKey) {
-                                iconType = "link";
-                                itemColor = "#61dafb";
-                            } else if (isEnum) {
-                                iconType = "enum";
-                                itemColor = "#9c64f4";
-                            }
-
+                <div className="entity-header"> {entity.table.name} </div>
+                <div className="entity-attributes" style={{ padding: "8px 0" }}>
+                    <ul className="attribute-list">
+                        {entity.table.attributes.map((attr, index) => {
                             return (
                                 <li
                                     key={index}
-                                    ref={(element) => {
-                                        attributeRefs.current[index] = element;
-                                    }}
-                                    style={{
-                                        padding: "8px 16px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        borderLeft: `4px solid ${
-                                            isPrimaryKey
-                                                ? "#ffd700"
-                                                : isForeignKey
-                                                ? "#61dafb"
-                                                : isEnum
-                                                ? "#9c64f4"
-                                                : "transparent"
-                                        }`,
-                                        backgroundColor:
-                                            index % 2 === 0
-                                                ? "#303030"
-                                                : "#2a2a2a",
-                                        color: itemColor,
-                                        position: "relative",
-                                    }}
-                                    onMouseEnter={() =>
-                                        setHoveredAttribute(index)
-                                    }
-                                    onMouseLeave={() =>
-                                        setHoveredAttribute(null)
-                                    }
+                                    className="entity-attribute"
+                                    ref={(element) => { attributeRefs.current[index] = element; }}
+                                    style={{ backgroundColor: index % 2 === 0 ? "#303030" : "#2a2a2a" }}
+                                    onMouseEnter={() => setHoveredAttribute(index)}
+                                    onMouseLeave={() => setHoveredAttribute(null)}
                                 >
-                                    {showIcon && (
-                                        <span
-                                            style={{
-                                                marginRight: "8px",
-                                                width: "16px",
-                                                height: "16px",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                            }}
-                                        >
-                                            {iconType === "key" && (
-                                                <svg
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="white"
-                                                >
-                                                    <path d="M7 17a5.007 5.007 0 0 0 4.898-4H14v2h2v-2h2v-2h-7.102A5.007 5.007 0 0 0 7 7c-2.757 0-5 2.243-5 5s2.243 5 5 5zm0-8c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3z" />
-                                                </svg>
-                                            )}
-                                            {iconType === "link" && (
-                                                <svg
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="white"
-                                                >
-                                                    <path d="M8 13h8v-2H8v2zm9-6h-4V5H7v2H3v2h4v2h10V9h4V7z" />
-                                                    <path d="M7 17h10v-2H7v2zm4 4h2v-2h-2v2z" />
-                                                </svg>
-                                            )}
-                                            {iconType === "enum" && (
-                                                <svg
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="white"
-                                                >
-                                                    <path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h16v2H4v-2z" />
-                                                </svg>
-                                            )}
-                                        </span>
-                                    )}
-                                    <span style={{ flexGrow: 1 }}>{attr}</span>
+                                    <span style={{ flexGrow: 1 }}> { `${attr.name} (${attr.type})` } </span>
                                 </li>
                             );
                         })}
                     </ul>
-                </div> */}
+                </div>
             </div>
 
             {/* {hoveredAttribute !== null && attributes[hoveredAttribute] && (

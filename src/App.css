@@ -90,7 +90,6 @@ body {
     border-right: 1px solid #333;
     overflow-y: auto;
     position: relative;
-    transition: width 0.15s ease;
     max-height: 100%;
     box-sizing: border-box;
     display: flex;
@@ -134,17 +133,6 @@ body {
     background-color: #2a2a2a;
     border-radius: 8px;
     border: 1px solid #383838;
-}
-
-.entity {
-    background-color: #333 !important;
-    border: 2px solid #666 !important;
-    color: #f0f0f0;
-}
-
-.entity-header {
-    background-color: #444;
-    border-bottom: 1px solid #666 !important;
 }
 
 .canvas-empty-state {
