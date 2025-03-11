@@ -1,166 +1,109 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useRef, useEffect } from "react";
+import { TableEntity } from "../types/visualization";
 
 interface EntityProps {
-    id: string;
-    name: string;
-    attributes: string[];
-    position: { x: number; y: number };
+    entity: TableEntity;
     isSelected?: boolean;
     onSelect: (id: string) => void;
     onMove: (id: string, position: { x: number; y: number }) => void;
-    enumData?: Record<string, string[]>;
 }
 
 export function Entity({
-    id,
-    name,
-    attributes,
-    position,
+    entity,
     isSelected = false,
     onSelect,
     onMove,
-    enumData = {},
 }: EntityProps) {
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-    const [hoveredAttribute, setHoveredAttribute] = useState<number | null>(
-        null
-    );
-    const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-    const entityRef = useRef<HTMLDivElement>(null);
-    const attributeRefs = useRef<(HTMLLIElement | null)[]>([]);
+    // const [isDragging, setIsDragging] = useState(false);
+    // const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    // const [hoveredAttribute, setHoveredAttribute] = useState<number | null>(
+    //     null
+    // );
+    // const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+    // const entityRef = useRef<HTMLDivElement>(null);
+    // const attributeRefs = useRef<(HTMLLIElement | null)[]>([]);
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (entityRef.current) {
-            const rect = entityRef.current.getBoundingClientRect();
-            setDragOffset({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            });
-            setIsDragging(true);
-            onSelect(id);
-            e.stopPropagation();
-        }
-    };
+    // const handleMouseDown = (e: React.MouseEvent) => {
+    //     if (entityRef.current) {
+    //         const rect = entityRef.current.getBoundingClientRect();
+    //         setDragOffset({
+    //             x: e.clientX - rect.left,
+    //             y: e.clientY - rect.top,
+    //         });
+    //         setIsDragging(true);
+    //         onSelect(id);
+    //         e.stopPropagation();
+    //     }
+    // };
 
-    const handleMouseMove = (e: MouseEvent) => {
-        if (isDragging && entityRef.current) {
-            const container = entityRef.current.parentElement;
-            if (container) {
-                const containerRect = container.getBoundingClientRect();
-                const newX = e.clientX - containerRect.left - dragOffset.x;
-                const newY = e.clientY - containerRect.top - dragOffset.y;
+    // const handleMouseMove = (e: MouseEvent) => {
+    //     if (isDragging && entityRef.current) {
+    //         const container = entityRef.current.parentElement;
+    //         if (container) {
+    //             const containerRect = container.getBoundingClientRect();
+    //             const newX = e.clientX - containerRect.left - dragOffset.x;
+    //             const newY = e.clientY - containerRect.top - dragOffset.y;
 
-                onMove(id, { x: newX, y: newY });
-            }
-        }
-    };
+    //             onMove(id, { x: newX, y: newY });
+    //         }
+    //     }
+    // };
 
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
-
-    
-    useEffect(() => {
-        if (isDragging) {
-            window.addEventListener("mousemove", handleMouseMove);
-            window.addEventListener("mouseup", handleMouseUp);
-        }
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [isDragging]);
+    // const handleMouseUp = () => {
+    //     setIsDragging(false);
+    // };
 
     
-    useEffect(() => {
-        if (
-            hoveredAttribute !== null &&
-            attributeRefs.current[hoveredAttribute]
-        ) {
-            const attrElement = attributeRefs.current[hoveredAttribute];
-            if (attrElement) {
-                const rect = attrElement.getBoundingClientRect();
+    // useEffect(() => {
+    //     if (isDragging) {
+    //         window.addEventListener("mousemove", handleMouseMove);
+    //         window.addEventListener("mouseup", handleMouseUp);
+    //     }
+
+    //     return () => {
+    //         window.removeEventListener("mousemove", handleMouseMove);
+    //         window.removeEventListener("mouseup", handleMouseUp);
+    //     };
+    // }, [isDragging]);
+
+    
+    // useEffect(() => {
+    //     if (
+    //         hoveredAttribute !== null &&
+    //         attributeRefs.current[hoveredAttribute]
+    //     ) {
+    //         const attrElement = attributeRefs.current[hoveredAttribute];
+    //         if (attrElement) {
+    //             const rect = attrElement.getBoundingClientRect();
                 
-                setTooltipPosition({
-                    top: rect.top - 10, 
-                    left: rect.left + rect.width / 2, 
-                });
-            }
-        }
-    }, [hoveredAttribute]);
+    //             setTooltipPosition({
+    //                 top: rect.top - 10, 
+    //                 left: rect.left + rect.width / 2, 
+    //             });
+    //         }
+    //     }
+    // }, [hoveredAttribute]);
 
     
-    const getTooltipContent = (attr: string) => {
-        
-        const nameTypeMatch = attr.match(
-            /(?:PK:|FK:|pk:|fk:)?\s*(\w+)\s+\((\w+(?:\(\d+(?:,\d+)?\))?)\)/
-        );
-        const columnType = nameTypeMatch ? nameTypeMatch[2] : "";
-
-        const tooltipLines = [];
-
-        
-        if (columnType && enumData[columnType]) {
-            tooltipLines.push(`Type: Enum (${columnType})`);
-            tooltipLines.push(`Values: ${enumData[columnType].join(", ")}`);
-        }
-
-        
-        if (
-            attr.toLowerCase().includes("pk:") ||
-            attr.toLowerCase().includes("[primary key]") ||
-            attr.toLowerCase().includes("primary key") ||
-            attr.toLowerCase().includes("[pk]")
-        ) {
-            tooltipLines.push("Primary Key");
-        }
-
-        
-        if (
-            attr.toLowerCase().includes("[ref:") ||
-            attr.toLowerCase().includes("fk:") ||
-            attr.toLowerCase().includes("[fk]")
-        ) {
-            const refMatch = attr.match(/ref:\s*([<>])\s*(\w+)\.(\w+)/);
-            if (refMatch) {
-                const direction = refMatch[1] === ">" ? "to" : "from";
-                tooltipLines.push(
-                    `Foreign Key - References ${direction} ${refMatch[2]}.${refMatch[3]}`
-                );
-            } else {
-                tooltipLines.push("Foreign Key");
-            }
-        }
-
-        
-        if (
-            attr.toLowerCase().includes("not null") ||
-            attr.toLowerCase().includes("nn")
-        ) {
-            tooltipLines.push("Required (NOT NULL)");
-        } else {
-            tooltipLines.push("Nullable");
-        }
-
-        return tooltipLines.join("\n");
-    };
+    // const getTooltipContent = (attr: string) => {
+    //     return ["TOLTIPS"];
+    // };
 
     return (
         <>
             <div
-                ref={entityRef}
+                // ref={entityRef}
                 className="entity"
                 style={{
                     position: "absolute",
-                    left: `${position.x}px`,
-                    top: `${position.y}px`,
+                    left: `${entity.position.x}px`,
+                    top: `${entity.position.y}px`,
                     border: `2px solid ${isSelected ? "#61dafb" : "#555"}`,
                     borderRadius: "8px",
                     backgroundColor: "#2a2a2a",
                     minWidth: "200px",
-                    cursor: isDragging ? "grabbing" : "grab",
+                    // cursor: isDragging ? "grabbing" : "grab",
                     boxShadow: isSelected
                         ? "0 0 0 2px #61dafb, 0 4px 16px rgba(0,0,0,0.4)"
                         : "0 4px 8px rgba(0,0,0,0.3)",
@@ -170,11 +113,11 @@ export function Entity({
                     zIndex: isSelected ? 2 : 1,
                     transition: "box-shadow 0.2s ease-in-out",
                 }}
-                onMouseDown={handleMouseDown}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onSelect(id);
-                }}
+                // onMouseDown={handleMouseDown}
+                // onClick={(e) => {
+                //     e.stopPropagation();
+                //     onSelect(id);
+                // }}
             >
                 <div
                     className="entity-header"
@@ -189,9 +132,9 @@ export function Entity({
                         position: "relative",
                     }}
                 >
-                    {name}
+                    {entity.table.name}
                 </div>
-                <div className="entity-attributes" style={{ padding: "8px 0" }}>
+                {/* <div className="entity-attributes" style={{ padding: "8px 0" }}>
                     <ul
                         style={{
                             listStyle: "none",
@@ -202,28 +145,6 @@ export function Entity({
                         }}
                     >
                         {attributes.map((attr, index) => {
-                            
-                            const isPrimaryKey =
-                                attr.toLowerCase().includes("pk:") ||
-                                attr.toLowerCase().includes("[primary key]") ||
-                                attr.toLowerCase().includes("primary key") ||
-                                attr.toLowerCase().includes("[pk]");
-
-                            const isForeignKey =
-                                attr.toLowerCase().includes("[ref:") ||
-                                attr.toLowerCase().includes("fk:") ||
-                                attr.toLowerCase().includes("[fk]");
-
-                            
-                            const typeMatch = attr.match(
-                                /\((\w+)(?:\(\d+(?:,\d+)?\))?\)/
-                            );
-                            const columnType = typeMatch ? typeMatch[1] : "";
-                            const isEnum =
-                                columnType &&
-                                Object.keys(enumData).includes(columnType);
-
-                            
                             const showIcon =
                                 isPrimaryKey || isForeignKey || isEnum;
                             let iconType = "";
@@ -322,10 +243,10 @@ export function Entity({
                             );
                         })}
                     </ul>
-                </div>
+                </div> */}
             </div>
 
-            {hoveredAttribute !== null && attributes[hoveredAttribute] && (
+            {/* {hoveredAttribute !== null && attributes[hoveredAttribute] && (
                 <div
                     className="attribute-tooltip"
                     style={{
@@ -363,7 +284,7 @@ export function Entity({
                         }}
                     ></div>
                 </div>
-            )}
+            )} */}
         </>
     );
 }

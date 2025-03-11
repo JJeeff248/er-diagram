@@ -1,28 +1,25 @@
 import { useEffect } from "react";
 import parse from "../utils/parser";
-import { TableDefinition } from "../types/schema";
+import useTableStore from "../stores/schemaStore";
+import { useShallow } from "zustand/shallow";
 
-interface SqlInputPanelProps {
-    smlInput: string;
-    onSmlInputChange: (value: string) => void;
-    onTablesGenerated: (tables: TableDefinition[]) => void;
-}
+export function SqlInputPanel() {
+    const [smlInput, setSmlInput, setTables] = useTableStore(useShallow((state) => [
+        state.smlInput,
+        state.setSmlInput,
+        state.setTables
+    ]));
 
-export function SqlInputPanel({
-    smlInput,
-    onSmlInputChange,
-    onTablesGenerated,
-}: SqlInputPanelProps) {
     useEffect(() => {
         const tables = parse(smlInput);
-        if (tables) onTablesGenerated(tables);
-    }, [onTablesGenerated, smlInput]);
+        if (tables) setTables(tables);
+    }, [setTables, smlInput]);
 
     return (
         <div className="sql-input-panel">
             <textarea
                 value={smlInput}
-                onChange={(e) => onSmlInputChange(e.target.value)}
+                onChange={(e) => setSmlInput(e.target.value)}
                 placeholder="Enter Schema Markup Language (SML)"
             />
         </div>
