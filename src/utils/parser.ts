@@ -40,7 +40,7 @@ const semantics = grammar.createSemantics().addOperation("eval", {
         enums[name.sourceString] = enumValues;
         return null;
     },
-    Relation: (_ref, name, _colon, ref1, arrow, ref2, _newline): null => {
+    Relation: (_ref, name, _space, _colon, ref1, arrow, ref2, _newline): null => {
         const refName = name.numChildren > 0 ? name.sourceString : "";
         if (arrow.sourceString === "<") refList.push([refName, ref1.sourceString, ref2.sourceString]);
         else refList.push([refName, ref2.sourceString, ref1.sourceString]);
@@ -93,7 +93,10 @@ function parse(input: string) {
         });
 
         return tables;
-    } else return null;
+    }
+
+    console.log(match.message);
+    return null;
 }
 
 export default parse;
