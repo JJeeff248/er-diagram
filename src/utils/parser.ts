@@ -53,11 +53,13 @@ const semantics = grammar.createSemantics().addOperation("eval", {
             if (arrow === "<") refList.push(["", `${lastSeenName}.${name.sourceString}`, ref]);
             else refList.push(["", ref, `${lastSeenName}.${name.sourceString}`]);
         }
+
+        console.log(propMap)
         
         return {
             name: name.sourceString,
             type: type.sourceString,
-            note: propMap.note,
+            note: propMap.NoteProp,
 
             isPrimaryKey: "pk" in propMap,
             isNullable: !("nn" in propMap),

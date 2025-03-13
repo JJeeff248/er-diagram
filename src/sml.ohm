@@ -7,10 +7,11 @@ SML {
     Attribute = string string  ("[" (Property delimeter) + "]")? #delimitedNewline
     Property = caseInsensitive<"pk"> | caseInsensitive<"increment"> | caseInsensitive<"unique"> | caseInsensitive<"nn"> |
                NoteProp | RefProp
-    NoteProp = caseInsensitive<"note"> ":" (("\"" string "\"") | ("\'" string "\'"))
+    NoteProp = caseInsensitive<"note"> ":" (("\"" lenientString+ "\"") | ("\'" lenientString+ "\'"))
     RefProp = caseInsensitive<"ref"> ":" arrow columnRef
 
     string = letter+
+    lenientString = (letter | digit | "'" | "," | ".")+
     columnRef = string "." string
     arrow = "<" | "-" | ">"
     delimeter = ("," | ";")?
