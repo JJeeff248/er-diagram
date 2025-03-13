@@ -29,6 +29,10 @@
     overflow-y: auto;
 }
 
+.entity-attributes {
+    padding: 8px 0;
+}
+
 .entity-attribute {
     padding: 8px 16px;
     display: flex;
@@ -36,4 +40,46 @@
     color: #e0e0e0;
     position: relative;
     border-left: 4px solid transparent;
+}
+
+.attribute-tooltip {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    max-width: 300px;
+    min-width: 200px;
+    line-height: 1.5;
+    --triangle-top: 0;
+    font-size: 14px;
+
+    /* min-height: 400px; */
+    /* white-space: pre-line; */
+}
+
+.attribute-tooltip::after {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: var(--triangle-top);
+    transform: translateY(-50%);
+    border-right: 10px solid #333;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+}
+
+.tooltip-header {
+    border-bottom: 1px solid #666;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.pre-note-underline {
+    border-top: 1px solid #666;
+    margin-top: 5px;
+    padding-top: 5px;
 }
