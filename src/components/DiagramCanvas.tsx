@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Entity } from "./Entity";
 // import { Relationship } from "./Relationship";
 import { TableDefinition } from "../types/schema";
@@ -36,11 +36,11 @@ export function DiagramCanvas() {
         })));
     }, [tables]);
     
-    const onEntityMove = (id: string, position: { x: number; y: number }) => {
+    const onEntityMove = useCallback((id: string, position: { x: number; y: number }) => {
         setEntities((prev) =>
             prev.map((e) => (e.id === id ? { ...e, position } : e))
         );
-    };
+    }, []);
 
     return (
         <div

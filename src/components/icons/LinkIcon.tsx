@@ -8,7 +8,7 @@ export function LinkIcon({
     size = 16
 }: IconProps) {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor" className="inline-icon" stroke-linecap="round"  stroke-linejoin="round" style={{ 
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" fill="currentColor" className="inline-icon" strokeLinecap="round"  strokeLinejoin="round" style={{ 
             width: `${size}px`, 
             height: `${size}px` 
         }} >

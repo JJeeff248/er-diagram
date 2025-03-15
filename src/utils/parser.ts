@@ -54,8 +54,6 @@ const semantics = grammar.createSemantics().addOperation("eval", {
             else refList.push(["", `${lastSeenName}.${name.sourceString}`, ref]);
         }
 
-        console.log(propMap)
-        
         return {
             name: name.sourceString,
             type: type.sourceString,
@@ -97,7 +95,6 @@ function parse(input: string) {
         return tables;
     }
 
-    console.log(match.message);
     return null;
 }
 

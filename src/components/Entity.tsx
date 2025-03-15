@@ -20,7 +20,7 @@ export function Entity({
     onMove,
 }: EntityProps) {
     const [isDragging, setIsDragging] = useState<boolean>(false);
-    const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const dragOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
     
     const [hoveringHeader, setHoveringHeader] = useState<boolean>(false);
     const [hoveredAttribute, setHoveredAttribute] = useState<number | null>(null);
@@ -59,10 +59,7 @@ export function Entity({
     const handleMouseDown = (e: React.MouseEvent) => {
         if (entityRef.current) {
             const rect = entityRef.current.getBoundingClientRect();
-            setDragOffset({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            });
+            dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
             setIsDragging(true);
             onSelect(entity.id);
             e.stopPropagation();
@@ -74,15 +71,15 @@ export function Entity({
             const container = entityRef.current.parentElement;
             if (container) {
                 const containerRect = container.getBoundingClientRect();
-                const newX = e.clientX - containerRect.left - dragOffset.x;
-                const newY = e.clientY - containerRect.top - dragOffset.y;
+                const newX = e.clientX - containerRect.left - dragOffset.current.x;
+                const newY = e.clientY - containerRect.top - dragOffset.current.y;
 
                 updateTooltipPosition();
                 updateHeaderPosition();
                 onMove(entity.id, { x: newX, y: newY });
             }
         }
-    }, [dragOffset.x, dragOffset.y, entity.id, isDragging, onMove, updateHeaderPosition, updateTooltipPosition]);
+    }, [entity.id, isDragging, onMove, updateHeaderPosition, updateTooltipPosition]);
 
     useEffect(() => {
         if (isDragging) {
@@ -103,7 +100,7 @@ export function Entity({
     
     useEffect(() => {
         updateHeaderPosition();
-    }, [entity, updateHeaderPosition]);
+    }, [entity.id, updateHeaderPosition]);
 
     return (
         <>
@@ -163,7 +160,6 @@ export function Entity({
     );
 }
 
-// table tooltip
 // table get rid of sticky select
 // table disable text select
 // table pos on generate

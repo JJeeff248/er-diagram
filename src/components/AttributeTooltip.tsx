@@ -32,7 +32,7 @@ export function AttributeTooltip({
                     <div> { attribute.isNullable ? "Nullable" : "Non-Null" } </div> 
                     { attribute.enumValues && <div className="enum-values">
                         <div> Allowed Values: </div> 
-                        { attribute.enumValues.map((val) => <div style={{ marginLeft: "10px", fontSize: "13px" }}> - { val } </div>) }
+                        { attribute.enumValues.map((val) => <div key={val} style={{ marginLeft: "10px", fontSize: "13px" }}> - { val } </div>) }
                     </div> }
                     { attribute.note && <div className="pre-note-underline"> { attribute.note } </div> }
                 </div>
