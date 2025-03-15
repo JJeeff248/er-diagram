@@ -34,14 +34,19 @@ export function DiagramCanvas() {
     // >(null);
 
     useEffect(() => {
-        setEntities(tables.map((table, idx): TableEntity => ({
-            id: table.name,
-            position: { 
-                x: gridMargin + idx % maxPerRow * xSpacing, 
-                y: gridMargin + Math.floor(idx / maxPerRow) * ySpacing 
-            },
-            table
-        })));
+        setEntities((prev) => {
+            const oldEntities = new Map();
+            prev.forEach((entity) => { oldEntities.set(entity.table.name, entity.position); });
+
+            return tables.map((table, idx): TableEntity => ({
+                id: table.name,
+                position: oldEntities.get(table.name) ?? { 
+                    x: gridMargin + idx % maxPerRow * xSpacing, 
+                    y: gridMargin + Math.floor(idx / maxPerRow) * ySpacing 
+                },
+                table
+            }));
+        });
     }, [tables]);
     
     const onEntityMove = useCallback((id: string, position: { x: number; y: number }) => {
