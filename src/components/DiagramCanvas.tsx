@@ -19,6 +19,11 @@ interface TableEntity {
 // }
 
 export function DiagramCanvas() {
+    const maxPerRow: number = 4;
+    const xSpacing: number = 300;
+    const ySpacing: number = 250;
+    const gridMargin: number = 50;
+
     const [tables] = useTableStore(useShallow((state) => [state.tables]));
 
     const [entities, setEntities] = useState<TableEntity[]>([]);
@@ -31,7 +36,10 @@ export function DiagramCanvas() {
     useEffect(() => {
         setEntities(tables.map((table, idx): TableEntity => ({
             id: table.name,
-            position: { x: idx, y: 0 },
+            position: { 
+                x: gridMargin + idx % maxPerRow * xSpacing, 
+                y: gridMargin + Math.floor(idx / maxPerRow) * ySpacing 
+            },
             table
         })));
     }, [tables]);

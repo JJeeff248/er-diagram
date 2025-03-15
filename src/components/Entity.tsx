@@ -160,6 +160,4 @@ export function Entity({
     );
 }
 
-// table disable text select
-// table pos on generate
 // table keep pos
