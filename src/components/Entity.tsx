@@ -4,6 +4,7 @@ import "../styles/Entity.css";
 import { AttributeTooltip } from "./AttributeTooltip";
 import { KeyIcon } from "./icons/KeyIcon";
 import { LinkIcon } from "./icons/LinkIcon";
+import { TableTooltip } from "./TableTooltip";
 
 interface EntityProps {
     entity: TableEntity;
@@ -18,26 +19,41 @@ export function Entity({
     onSelect,
     onMove,
 }: EntityProps) {
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState<boolean>(false);
+    const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    
+    const [hoveringHeader, setHoveringHeader] = useState<boolean>(false);
     const [hoveredAttribute, setHoveredAttribute] = useState<number | null>(null);
     const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0, halfTop: 0 });
+    const [headerPosition, setHeaderPosition] = useState({ top: 0, left: 0, halfTop: 0 });
+
     const entityRef = useRef<HTMLDivElement>(null);
+    const entityHeaderRef = useRef<HTMLDivElement>(null);
     const attributeRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+    const updatePosition = useCallback((element: HTMLElement, set: React.Dispatch<React.SetStateAction<{ top: number; left: number; halfTop: number }>>) => {
+        if (!element) return;
+        
+        const rect = element.getBoundingClientRect();
+        set({
+            top: rect.top, 
+            left: rect.right, 
+            halfTop: rect.height / 2
+        });
+    }, []);
 
     const updateTooltipPosition = useCallback(() => {
         if (hoveredAttribute !== null && attributeRefs.current[hoveredAttribute]) {
             const attrElement = attributeRefs.current[hoveredAttribute];
-            if (attrElement) {
-                const rect = attrElement.getBoundingClientRect();
-                setTooltipPosition({
-                    top: rect.top, 
-                    left: rect.right, 
-                    halfTop: rect.height / 2
-                });
-            }
+            updatePosition(attrElement, setTooltipPosition);
         }
-    }, [hoveredAttribute]);
+    }, [hoveredAttribute, updatePosition]);
+    
+    const updateHeaderPosition = useCallback(() => {
+        if (entityHeaderRef.current) {
+            updatePosition(entityHeaderRef.current, setHeaderPosition);
+        }
+    }, [entityHeaderRef, updatePosition]);
 
     const handleMouseUp = () => setIsDragging(false);
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -62,10 +78,11 @@ export function Entity({
                 const newY = e.clientY - containerRect.top - dragOffset.y;
 
                 updateTooltipPosition();
+                updateHeaderPosition();
                 onMove(entity.id, { x: newX, y: newY });
             }
         }
-    }, [dragOffset.x, dragOffset.y, entity.id, isDragging, onMove, updateTooltipPosition]);
+    }, [dragOffset.x, dragOffset.y, entity.id, isDragging, onMove, updateHeaderPosition, updateTooltipPosition]);
 
     useEffect(() => {
         if (isDragging) {
@@ -83,6 +100,10 @@ export function Entity({
     useEffect(() => {
         updateTooltipPosition();
     }, [hoveredAttribute, updateTooltipPosition]);
+    
+    useEffect(() => {
+        updateHeaderPosition();
+    }, [entity, updateHeaderPosition]);
 
     return (
         <>
@@ -102,7 +123,10 @@ export function Entity({
                     onSelect(entity.id);
                 }}
             >
-                <div className="entity-header"> {entity.table.name} </div>
+                <div className="entity-header" ref={entityHeaderRef}
+                    onMouseEnter={() => setHoveringHeader(true)}
+                    onMouseLeave={() => setHoveringHeader(false)}
+                > {entity.table.name} </div>
                 <div className="entity-attributes">
                     <ul className="attribute-list">
                         {entity.table.attributes.map((attr, index) => {
@@ -133,7 +157,14 @@ export function Entity({
                 </div>
             </div>
 
+            <TableTooltip tableName={ hoveringHeader ? entity.table.name : null } note={ entity.table.note } position={headerPosition} />
             <AttributeTooltip attribute={ hoveredAttribute !== null ? entity.table.attributes[hoveredAttribute] : null } position={tooltipPosition} />
         </>
     );
 }
+
+// table tooltip
+// table get rid of sticky select
+// table disable text select
+// table pos on generate
+// table keep pos
