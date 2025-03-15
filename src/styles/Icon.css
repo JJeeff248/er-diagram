@@ -1,0 +1,18 @@
+.inline-icon {
+    display: inline-block;
+    vertical-align: middle;
+    align-self: center;
+}
+
+.nn-icon {
+    background-color: #f58b40;
+    color: #fff;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 2px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    vertical-align: middle;
+}

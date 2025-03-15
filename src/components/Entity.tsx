@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { TableEntity } from "../types/visualization";
 import "../styles/Entity.css";
 import { AttributeTooltip } from "./AttributeTooltip";
+import { KeyIcon } from "./icons/KeyIcon";
+import { LinkIcon } from "./icons/LinkIcon";
 
 interface EntityProps {
     entity: TableEntity;
@@ -113,7 +115,17 @@ export function Entity({
                                     onMouseEnter={() => setHoveredAttribute(index)}
                                     onMouseLeave={() => setHoveredAttribute(null)}
                                 >
-                                    <span style={{ flexGrow: 1 }}> { `${attr.name} (${attr.type})` } </span>
+                                    <div className="h-stack attribute-content">
+                                        <div className="h-stack" style={{ flexGrow: 1, gap: "5px" }}> 
+                                            { attr.name } 
+                                            { attr.isPrimaryKey && <KeyIcon /> }
+                                            { attr.foreignKey && <LinkIcon /> }
+                                        </div>
+                                        <div className="h-stack" style={{ gap: "5px", color: "#f58b40" }}> 
+                                            { attr.type } 
+                                            { !attr.isNullable && <div className="nn-icon"> NN </div> }
+                                        </div>
+                                    </div>
                                 </li>
                             );
                         })}

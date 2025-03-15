@@ -42,8 +42,6 @@ export function DiagramCanvas() {
         );
     };
 
-    // const onEntitySelect = (id: string) => setSelectedEntityId(id);
-
     return (
         <div
             className="diagram-canvas"

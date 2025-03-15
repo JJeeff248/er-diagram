@@ -42,16 +42,16 @@ const semantics = grammar.createSemantics().addOperation("eval", {
     },
     Relation: (_ref, name, _space, _colon, ref1, arrow, ref2, _newline): null => {
         const refName = name.numChildren > 0 ? name.sourceString : "";
-        if (arrow.sourceString === "<") refList.push([refName, ref1.sourceString, ref2.sourceString]);
-        else refList.push([refName, ref2.sourceString, ref1.sourceString]);
+        if (arrow.sourceString === "<") refList.push([refName, ref2.sourceString, ref1.sourceString]);
+        else refList.push([refName, ref1.sourceString, ref2.sourceString]);
         return null;
     },
     Attribute: (name, type, _open, props, _delimeter, _close, _newline): AttributeDefinition => {
         const propMap = props.numChildren > 0 ? props.eval()[0] : {};
         if ("RefProp" in propMap) {
             const [arrow, ref] = propMap["RefProp"];
-            if (arrow === "<") refList.push(["", `${lastSeenName}.${name.sourceString}`, ref]);
-            else refList.push(["", ref, `${lastSeenName}.${name.sourceString}`]);
+            if (arrow === "<") refList.push(["", ref, `${lastSeenName}.${name.sourceString}`]);
+            else refList.push(["", `${lastSeenName}.${name.sourceString}`, ref]);
         }
 
         console.log(propMap)
