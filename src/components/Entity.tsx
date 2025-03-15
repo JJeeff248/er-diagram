@@ -9,7 +9,7 @@ import { TableTooltip } from "./TableTooltip";
 interface EntityProps {
     entity: TableEntity;
     isSelected?: boolean;
-    onSelect: (id: string) => void;
+    onSelect: (id: string | null) => void;
     onMove: (id: string, position: { x: number; y: number }) => void;
 }
 
@@ -55,7 +55,11 @@ export function Entity({
         }
     }, [entityHeaderRef, updatePosition]);
 
-    const handleMouseUp = () => setIsDragging(false);
+    const handleMouseUp = useCallback(() => {
+        setIsDragging(false);
+        onSelect(null);
+    }, [onSelect]);
+
     const handleMouseDown = (e: React.MouseEvent) => {
         if (entityRef.current) {
             const rect = entityRef.current.getBoundingClientRect();
@@ -91,7 +95,7 @@ export function Entity({
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [handleMouseMove, isDragging]);
+    }, [handleMouseMove, handleMouseUp, isDragging]);
 
     
     useEffect(() => {
@@ -115,10 +119,6 @@ export function Entity({
                     zIndex: isSelected ? 2 : 1,
                 }}
                 onMouseDown={handleMouseDown}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onSelect(entity.id);
-                }}
             >
                 <div className="entity-header" ref={entityHeaderRef}
                     onMouseEnter={() => setHoveringHeader(true)}
@@ -160,7 +160,6 @@ export function Entity({
     );
 }
 
-// table get rid of sticky select
 // table disable text select
 // table pos on generate
 // table keep pos
