@@ -1,177 +1,80 @@
-
-
-interface EntityData {
-    id: string;
-    name: string;
-    attributes: string[];
-    position: { x: number; y: number };
-}
+import { useEffect, useState } from "react";
+import "../styles/Entity.css";
 
 interface RelationshipProps {
-    id: string;
-    source: EntityData;
-    target: EntityData;
-    sourceAttributeIndex: number;
-    targetAttributeIndex: number;
-    type: "one-to-one" | "one-to-many" | "many-to-many";
-    isSelected: boolean;
-    onSelect: (id: string) => void;
+    from: HTMLLIElement | null;
+    to: HTMLLIElement | null;
 }
 
-export function Relationship({
-    id,
-    source,
-    target,
-    sourceAttributeIndex,
-    targetAttributeIndex,
-    type,
-    isSelected,
-    onSelect,
-}: RelationshipProps) {
-    const ENTITY_HEADER_HEIGHT = 40;
-    const ATTRIBUTE_HEIGHT = 33; 
+export function Relationship({ from, to }: RelationshipProps) {
+    const [fromPosition, setFromPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [toPosition, setToPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-    
-    const sourceY =
-        source.position.y +
-        ENTITY_HEADER_HEIGHT +
-        (sourceAttributeIndex + 0.5) * ATTRIBUTE_HEIGHT;
-    const targetY =
-        target.position.y +
-        ENTITY_HEADER_HEIGHT +
-        (targetAttributeIndex + 0.5) * ATTRIBUTE_HEIGHT;
+    useEffect(() => {
+        let animationFrameId: number;
 
-    
-    const sourceCenterX = source.position.x + 100; 
-    const targetCenterX = target.position.x + 100;
+        const updatePositions = () => {
+            if (from && to) {
+                const fromRect = from.getBoundingClientRect();
+                const toRect = to.getBoundingClientRect();
 
-    const isSourceToLeft = sourceCenterX < targetCenterX;
+                setFromPosition({
+                    x: fromRect.right,
+                    y: fromRect.top + fromRect.height / 2
+                });
 
-    const sourceX = isSourceToLeft
-        ? source.position.x + 200 
-        : source.position.x; 
+                setToPosition({
+                    x: toRect.left,
+                    y: toRect.top + toRect.height / 2
+                });
+            }
+            animationFrameId = requestAnimationFrame(updatePositions); // Continuously track positions
+        };
 
-    const targetX = isSourceToLeft
-        ? target.position.x 
-        : target.position.x + 200; 
+        updatePositions(); // Start tracking
 
-    
-    const renderMarker = () => {
-        const markerId = `marker-${id}`;
+        return () => {
+            cancelAnimationFrame(animationFrameId); // Cleanup on unmount
+        };
+    }, [from, to]); // Track continuously
 
-        return (
-            <defs>
-                <marker
-                    id={markerId}
-                    viewBox="0 0 10 10"
-                    refX="5"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
-                    orient="auto-start-reverse"
-                >
-                    {type === "one-to-many" || type === "many-to-many" ? (
-                        <path
-                            d="M 0 0 L 10 5 L 0 10 z"
-                            fill={isSelected ? "#61dafb" : "#aaa"}
-                        />
-                    ) : (
-                        <path
-                            d="M 0 5 L 10 5 M 5 0 L 5 10"
-                            stroke={isSelected ? "#61dafb" : "#aaa"}
-                            strokeWidth="1.5"
-                        />
-                    )}
-                </marker>
-            </defs>
-        );
-    };
-
-    
-    const controlPointOffset = 100; 
-    const sourceControlX = isSourceToLeft
-        ? sourceX + controlPointOffset
-        : sourceX - controlPointOffset;
-    const targetControlX = isSourceToLeft
-        ? targetX - controlPointOffset
-        : targetX + controlPointOffset;
-
-    
-    const path = `M ${sourceX},${sourceY} C ${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}`;
-
-    
-    const getRelationshipLabel = () => {
-        switch (type) {
-            case "one-to-one":
-                return "1:1";
-            case "one-to-many":
-                return "1:N";
-            case "many-to-many":
-                return "N:M";
-            default:
-                return "";
-        }
-    };
+    const midX = (fromPosition.x + toPosition.x) / 2;
 
     return (
-        <svg
-            style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                pointerEvents: "none",
-                zIndex: 0,
-            }}
-            onClick={(e) => {
-                e.stopPropagation();
-                onSelect(id);
-            }}
-        >
-            {renderMarker()}
-            <path
-                d={path}
-                style={{
-                    stroke: isSelected ? "#61dafb" : "#aaa",
-                    strokeWidth: isSelected ? 3 : 2,
-                    fill: "none",
-                    pointerEvents: "stroke",
-                    cursor: "pointer",
-                    transition:
-                        "stroke 0.2s ease-in-out, stroke-width 0.2s ease-in-out",
-                    strokeDasharray: type === "many-to-many" ? "5,5" : "none",
-                }}
-                markerEnd={`url(#marker-${id})`}
-            />
+        <>
+            {from && to && (
+                <div>
+                    {/* Horizontal line from 'fromPosition' to the midpoint */}
+                    <div style={{
+                        position: "fixed",
+                        top: `${fromPosition.y}px`,
+                        left: `${Math.min(fromPosition.x, midX)}px`,
+                        width: `${Math.abs(midX - fromPosition.x)}px`,
+                        height: "2px",
+                        backgroundColor: "black"
+                    }} />
 
-            <rect
-                x={(sourceX + targetX) / 2 - 20}
-                y={(sourceY + targetY) / 2 - 15}
-                width="40"
-                height="24"
-                rx="12"
-                ry="12"
-                fill={isSelected ? "#61dafb" : "#444"}
-                opacity="0.8"
-                pointerEvents="none"
-            />
+                    {/* Horizontal line from 'toPosition' to the midpoint */}
+                    <div style={{
+                        position: "fixed",
+                        top: `${toPosition.y}px`,
+                        left: `${Math.min(toPosition.x, midX)}px`,
+                        width: `${Math.abs(midX - toPosition.x)}px`,
+                        height: "2px",
+                        backgroundColor: "black"
+                    }} />
 
-            <text
-                x={(sourceX + targetX) / 2}
-                y={(sourceY + targetY) / 2 + 5}
-                style={{
-                    pointerEvents: "none",
-                    textAnchor: "middle",
-                    fontFamily:
-                        "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    fill: isSelected ? "#000" : "#fff",
-                }}
-            >
-                {getRelationshipLabel()}
-            </text>
-        </svg>
+                    {/* Vertical line connecting the two */}
+                    <div style={{
+                        position: "fixed",
+                        top: `${Math.min(fromPosition.y, toPosition.y)}px`,
+                        left: `${midX}px`,
+                        width: "2px",
+                        height: `${Math.abs(toPosition.y - fromPosition.y)}px`,
+                        backgroundColor: "black"
+                    }} />
+                </div>
+            )}
+        </>
     );
 }

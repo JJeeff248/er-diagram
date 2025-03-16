@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Entity } from "./Entity";
-// import { Relationship } from "./Relationship";
-import { TableDefinition } from "../types/schema";
+import { AttributeDefinition, TableDefinition } from "../types/schema";
 import useTableStore from "../stores/schemaStore";
 import { useShallow } from "zustand/shallow";
+import { Relationship } from "./Relationship";
 
 interface TableEntity {
     id: string;
@@ -11,12 +11,10 @@ interface TableEntity {
     table: TableDefinition;
 }
 
-// interface RelationshipData {
-//     id: string;
-//     from: { entityId: string; attributeIndex: number };
-//     to: { entityId: string; attributeIndex: number };
-//     type: "one-to-one" | "one-to-many" | "many-to-many";
-// }
+interface RelationshipData {
+    from: { tableName: string; atrrName: string };
+    to: { tableName: string; atrrName: string };
+}
 
 export function DiagramCanvas() {
     const maxPerRow: number = 4;
@@ -27,13 +25,19 @@ export function DiagramCanvas() {
     const [tables] = useTableStore(useShallow((state) => [state.tables]));
 
     const [entities, setEntities] = useState<TableEntity[]>([]);
-    // const [relationships, setRelationships] = useState<RelationshipData[]>([]);
+    const [relationships, setRelationships] = useState<RelationshipData[]>([]);
     const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-    // const [selectedRelationshipId, setSelectedRelationshipId] = useState<
-    //     string | null
-    // >(null);
+
+    const entityRefs = useRef<Map<string, ({ 
+        getName: () => string, 
+        getAttribute: (name: string) => HTMLLIElement | null; 
+    } | null)>>(new Map());
+
+    const [refsReady, setRefsReady] = useState<boolean>(false);
 
     useEffect(() => {
+        setRefsReady(false);
+
         setEntities((prev) => {
             const oldEntities = new Map();
             prev.forEach((entity) => { oldEntities.set(entity.table.name, entity.position); });
@@ -47,6 +51,19 @@ export function DiagramCanvas() {
                 table
             }));
         });
+
+        const newRelationships: RelationshipData[] = [];
+        tables.forEach((table: TableDefinition) => {
+            table.attributes.forEach((attr: AttributeDefinition) => {
+                if (!attr.foreignKey) return;
+                
+                newRelationships.push({
+                    from: { tableName: table.name, atrrName: attr.name },
+                    to: { tableName: attr.foreignKey.split(".")[0], atrrName: attr.foreignKey.split(".")[1] }
+                });
+            })
+        })
+        setRelationships(newRelationships);
     }, [tables]);
     
     const onEntityMove = useCallback((id: string, position: { x: number; y: number }) => {
@@ -55,14 +72,22 @@ export function DiagramCanvas() {
         );
     }, []);
 
+    const getAttributeRef = useCallback((id: string, attributeName: string): HTMLLIElement | null => {
+        const entity = entityRefs.current.get(id);
+        if (!entity) return null;
+        return entity.getAttribute(attributeName);
+    }, []);
+
+    useEffect(() => {
+        if (refsReady) return;
+        setRefsReady(entities.every(entity => entityRefs.current.get(entity.table.name) !== null));
+    }, [entities, refsReady]);
+
     return (
         <div
             className="diagram-canvas"
             style={{ position: "relative", height: "100%", width: "100%" }}
-            onClick={() => {
-                setSelectedEntityId(null);
-                // setSelectedRelationshipId(null);
-            }}
+            onClick={() => setSelectedEntityId(null)}
         >
             {entities.length === 0 ? (
                 <div
@@ -80,40 +105,17 @@ export function DiagramCanvas() {
                 </div>
             ) : (
                 <>
-                    {/* {relationships.map((relationship) => {
-                        const sourceEntity = entities.find(
-                            (e) => e.id === relationship.from.entityId
-                        );
-                        const targetEntity = entities.find(
-                            (e) => e.id === relationship.to.entityId
-                        );
-
-                        if (!sourceEntity || !targetEntity) return null;
-
-                        return (
-                            <Relationship
-                                key={relationship.id}
-                                id={relationship.id}
-                                source={sourceEntity}
-                                target={targetEntity}
-                                sourceAttributeIndex={
-                                    relationship.from.attributeIndex
-                                }
-                                targetAttributeIndex={
-                                    relationship.to.attributeIndex
-                                }
-                                type={relationship.type}
-                                isSelected={
-                                    selectedRelationshipId ===
-                                    relationship.id
-                                }
-                                onSelect={handleRelationshipSelect}
-                            />
-                        );
-                    })} */}
+                    {relationships.map((relationship, idx) => (
+                        <Relationship 
+                            key={idx}
+                            from={getAttributeRef(relationship.from.tableName, relationship.from.atrrName)} 
+                            to={getAttributeRef(relationship.to.tableName, relationship.to.atrrName)}
+                        />
+                    ))}
 
                     {entities.map((entity) => (
                         <Entity
+                            ref={(element) => { entityRefs.current.set(entity.table.name, element); }}
                             entity={entity}
                             key={entity.id}
                             isSelected={selectedEntityId === entity.id}

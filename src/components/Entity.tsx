@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { TableEntity } from "../types/visualization";
 import "../styles/Entity.css";
 import { AttributeTooltip } from "./AttributeTooltip";
@@ -13,12 +13,15 @@ interface EntityProps {
     onMove: (id: string, position: { x: number; y: number }) => void;
 }
 
-export function Entity({
+export const Entity = forwardRef(({
     entity,
     isSelected = false,
     onSelect,
     onMove,
-}: EntityProps) {
+}: EntityProps, ref: React.Ref<{ 
+    getName: () => string,
+    getAttribute: (name: string) => HTMLLIElement | null 
+}>) => {
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const dragOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
     
@@ -30,6 +33,19 @@ export function Entity({
     const entityRef = useRef<HTMLDivElement>(null);
     const entityHeaderRef = useRef<HTMLDivElement>(null);
     const attributeRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+    useImperativeHandle(ref, () => ({ 
+        getName: () => entity.table.name,
+        getAttribute 
+    }));
+
+    const getAttribute = (name: string): HTMLLIElement | null => {
+        for (let i = 0; i < attributeRefs.current.length; i++) {
+            const attr = attributeRefs.current[i];
+            if (entity.table.attributes[i].name === name) return attr;
+        }
+        return null;
+    }
 
     const updatePosition = useCallback((element: HTMLElement, set: React.Dispatch<React.SetStateAction<{ top: number; left: number; halfTop: number }>>) => {
         if (!element) return;
@@ -158,6 +174,6 @@ export function Entity({
             <AttributeTooltip attribute={ hoveredAttribute !== null ? entity.table.attributes[hoveredAttribute] : null } position={tooltipPosition} />
         </>
     );
-}
+});
 
-// table keep pos
+// FIX LAYERING MAINTAIN ORDER THING
